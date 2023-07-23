@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+       .container {
+        margin-top: 50px;
+        margin-left: 400px;
+        text-align: center;
+    }
+</style>
+</head>
+<body>
+<div class="container" >
+<h2>Главная страница</h2>
+<br>
+    <a href="{% url 'topic_detail' topic_id=1 %}" class="btn btn-outline-dark mr-3"
+       style="border-radius:10px; height:40px; text-align:center;"> Подробности темы</a><br>
+    <br>
+    <a href="{% url 'add_discipline' %}" class="btn btn-outline-dark mr-3"
+       style="border-radius:10px; height:40px;">Добавить дисциплину</a><br>
+    <br>
+    <a href="{% url 'discipline_list' %}" class="btn btn-outline-dark mr-3"
+       style="border-radius:10px; height:40px;">Список дисциплин</a><br>
+    <br>
+    <a href="{% url 'add_topic' %}" class="btn btn-outline-dark mr-3"
+       style="border-radius:10px; height:40px;">Добавить тему</a><br>
+    <br>
+    <a href="{% url 'topic_list' %}" class="btn btn-outline-dark mr-3"
+       style="border-radius:10px; height:40px;">Список тем</a><br>
+    <br>
+    <a href="{% url 'add_incorrect_answer' %}" class="btn btn-outline-dark mr-3"
+       style="border-radius:10px; height:40px;">Добавить неверный ответ</a><br>
+    <br>
+    <a href="{% url 'add_question' %}" class="btn btn-outline-dark mr-3"
+       style="border-radius:10px; height:40px;">Добавить вопрос</a><br>
+</div>
+</body>
+</html>
