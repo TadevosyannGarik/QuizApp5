@@ -1,0 +1,61 @@
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+from django.utils import timezone
+
+
+class Discipline(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
+class Topic(models.Model):
+    discipline = models.ForeignKey(Discipline, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
+class IncorrectAnswer(models.Model):
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    answer_text = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.answer_text
+
+
+class Question(models.Model):
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    question_text = models.TextField()
+    correct_answer = models.CharField(max_length=100, default='')
+
+    def get_incorrect_answers(self):
+        incorrect_answers = IncorrectAnswer.objects.filter(topic=self.topic).exclude(answer_text=self.correct_answer).order_by('?')[:3]
+        return [answer.answer_text for answer in incorrect_answers]
+
+
+class Student(models.Model):
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    patronymic = models.CharField(max_length=100)
+    date_of_birth = models.DateField()
+    course = models.CharField(max_length=100, null=True)
+
+
+class User(AbstractUser):
+    student = models.OneToOneField(Student, on_delete=models.CASCADE, null=True, blank=True, unique=True)
+
+    def __str__(self):
+        return self.email
+
+
+class QuizResult(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    score = models.IntegerField()
+    date_completed = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.topic.name} - Score: {self.score}"
