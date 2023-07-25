@@ -30,10 +30,12 @@ class Question(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     question_text = models.TextField()
     correct_answer = models.CharField(max_length=100, default='')
+    points = models.IntegerField(default=0)
 
     def get_incorrect_answers(self):
         incorrect_answers = IncorrectAnswer.objects.filter(topic=self.topic).exclude(answer_text=self.correct_answer).order_by('?')[:3]
         return [answer.answer_text for answer in incorrect_answers]
+
 
 
 class Student(models.Model):
@@ -54,8 +56,9 @@ class User(AbstractUser):
 class QuizResult(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
-    score = models.IntegerField()
-    date_completed = models.DateTimeField(default=timezone.now)
+    score = models.IntegerField(default=0)
+    total_points = models.IntegerField(default=0)
+    date_completed = models.DateTimeField()
 
     def __str__(self):
-        return f"{self.user.email} - {self.topic.name} - Score: {self.score}"
+        return f"{self.user.username} - {self.topic.name} - Score: {self.score}"

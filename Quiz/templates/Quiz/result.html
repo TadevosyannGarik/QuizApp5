@@ -1,26 +1,15 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <!-- Ваши стили и другие метаданные -->
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
 </head>
 <body>
   <h2>Результаты викторины</h2>
 
   <p>Ваш результат: {{ score }} из {{ total_questions }}</p>
-
-  <h3>Выбранные ответы:</h3>
-  <ul>
-    {% for question_id, selected_answer in selected_answers.items %}
-      {% for question in questions %}
-        {% if question.id == question_id %}
-          <li>
-            <p><strong>Вопрос:</strong> {{ question.question_text }}</p>
-            <p><strong>Выбранный ответ:</strong> {{ selected_answer }}</p>
-            <p><strong>Правильный ответ:</strong> {{ question.correct_answer }}</p>
-          </li>
-        {% endif %}
-      {% endfor %}
-    {% endfor %}
-  </ul>
 </body>
 </html>

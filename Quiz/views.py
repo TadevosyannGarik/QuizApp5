@@ -50,12 +50,12 @@ def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
         if form.is_valid():
-            email = form.cleaned_data['username']  # Вместо 'username' используем поле email для входа пользователя
+            email = form.cleaned_data['username']
             password = form.cleaned_data['password']
             user = authenticate(request, username=email, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('after_login')  # Перенаправьте пользователя на страницу после успешного входа
+                return redirect('after_login')
     else:
         form = AuthenticationForm()
     return render(request, 'Quiz/login.html', {'form': form})
@@ -133,11 +133,12 @@ def add_question(request):
         for i in range(1, question_count + 1):
             question_text = request.POST.get(f'question_text_{i}')
             correct_answer = request.POST.get(f'correct_answer_{i}')
+            question_points = int(request.POST.get(f'question_points_{i}'))  # New field for question points
 
             if topic_id and question_text and correct_answer:
-                save_question(topic_id, question_text, correct_answer)
+                save_question(topic_id, question_text, correct_answer, question_points)  # Pass question_points to the save function
 
-        return redirect('index  ')
+        return redirect('index')
 
     return render(request, 'Quiz/add_question.html', {'topics': topics})
 
@@ -149,45 +150,50 @@ def test_list(request):
 
 def topic_detail(request, topic_id):
     topic = get_object_or_404(Topic, pk=topic_id)
-    incorrect_answer = list(IncorrectAnswer.objects.filter(topic=topic).values_list('answer_text', flat=True))
-    questions = topic.question_set.all()
     all_q = Question.objects.filter(topic=topic)
     list_question = []
+
+    total_points = 0
+
     for i in all_q:
         tmp_list = []
         tmp_list.append(i.question_text)
-        random.shuffle(incorrect_answer)
-        answers = [i.correct_answer]
+        answers = [(i.correct_answer, i.points)]
         count = 0
-        while len(answers) < 4 and count < len(incorrect_answer):
-            if incorrect_answer[count] != i.correct_answer:
-                answers.append(incorrect_answer[count])
+        while len(answers) < 4 and count < len(all_q) - 1:
+            if all_q[count].correct_answer != i.correct_answer:
+                answers.append((all_q[count].correct_answer, 0))
             count += 1
         random.shuffle(answers)
         tmp_list.append(answers)
         list_question.append(tmp_list)
+        total_points += i.points
+
     random.shuffle(list_question)
 
     if request.method == 'POST':
         score = 0
-        for question in questions:
-            selected_answer = request.POST.get(str(question.id))
-            if selected_answer == question.correct_answer:
-                score += 1
+
+        for question_data in list_question:
+            selected_answer = request.POST.get("question_" + str(question_data[0]))
+            for ans_id, points in question_data[1]:
+                if ans_id == selected_answer:
+                    score += points
+                    break
 
         user = request.user
         quiz_result = QuizResult.objects.create(
             user=user,
             topic=topic,
             score=score,
+            total_points=total_points,
             date_completed=timezone.now()
         )
         quiz_result.save()
 
-        return render(request, 'Quiz/result.html', {'score': score, 'total_questions': questions.count()})
+        return render(request, 'Quiz/result.html', {'score': score, 'total_questions': all_q.count()})
 
-    return render(request, 'Quiz/topic_detail.html',
-                  {'topic': topic, 'questions': questions, 'list_question': list_question})
+    return render(request, 'Quiz/topic_detail.html',  {'topic': topic, 'questions': all_q, 'list_question': list_question})
 
 
 def result(request):

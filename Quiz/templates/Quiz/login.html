@@ -20,7 +20,6 @@
             background:color: #eee;
         }
 
-        /* Стили для контейнера */
         .container {
             display: flex;
             padding: 0px;
@@ -29,7 +28,6 @@
             border-radius: 10px;
         }
 
-        /* Стили для левого контейнера (форма регистрации) */
         .left-side {
             flex: 1;
             padding: 20px;
@@ -38,7 +36,6 @@
             justify-content: center;
         }
 
-        /* Стили для правого контейнера (фотография) */
         .right-side {
             flex: 1;
             padding: 20px;
@@ -48,7 +45,6 @@
             margin-top: -60px
         }
 
-        /* Стили для формы регистрации */
         form {
             display: flex;
             flex-direction: column;
@@ -74,7 +70,7 @@
   }
 
   .input-wrapper input[type="password"] {
-    padding-right: 40px; /* Добавляем дополнительный отступ справа для размещения иконки */
+    padding-right: 40px;
   }
 
   .input-wrapper i {
@@ -98,7 +94,7 @@
         {% csrf_token %}
         <label for="email"></label>
         <input style="width: 500px; height:45px; border-radius: 10px;" class="form-control mx-auto"
-                       placeholder="Mail" type="email" id="email" name="username" required>
+                       placeholder="Электронная почта" type="email" id="email" name="username" required>
         <br>
 <label for="password"></label>
 <div class="input-wrapper">

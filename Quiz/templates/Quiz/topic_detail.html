@@ -1,7 +1,7 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+        <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -9,8 +9,9 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body {
+</head>
+<style>
+     body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -59,31 +60,40 @@
         button:hover {
             background-color: #45a049;
         }
-    </style>
-</head>
+</style>
 <body>
-<form method="post" action="{% url 'topic_detail' topic.id %}">
-  {% csrf_token %}
+    <form method="post" action="{% url 'topic_detail' topic.id %}">
+        {% csrf_token %}
+        <h2>{{ topic.name }}</h2>
 
-  <h2>{{ topic.name }}</h2>
 
-  {% for question in list_question %}
-    <h5>Вопрос:</h5>
-    <p>{{ question.0 }}</p>
+        {% for question_data in list_question %}
+            <h5>Вопрос:</h5>
+            <p>{{ question_data.0 }}</p>
 
-    <h6>Варианты ответа:</h6>
-    <ul>
-      {% for ans in question.1 %}
-        <li>
-          <input type="radio" name="question_{{ forloop.parentloop.counter0 }}" value="{{ ans }}">
-          {{ ans }}
-        </li>
-      {% endfor %}
-    </ul>
-  {% endfor %}
+            <h6>Варианты ответа:</h6>
+            <ul>
+                {% for ans_id, is_correct in question_data.1 %}
+                    {% if is_correct %}
+                        {% with ans_text=ans_id %}
+                            <li>
+                                <input type="radio" name="question_{{ question_data.0 }}" value="{{ ans_id }}" required>
+                                {{ ans_text }}
+                            </li>
+                        {% endwith %}
+                    {% else %}
+                        {% with ans_text=ans_id %}
+                            <li>
+                                <input type="radio" name="question_{{ question_data.0 }}" value="{{ ans_id }}" required>
+                                {{ ans_text }}
+                            </li>
+                        {% endwith %}
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        {% endfor %}
 
-  <button class="btn btn-outline-success" style="border-radius:10px; height:40px; text-align:center;">Отправить</button>
-</form>
-
+        <button class="btn btn-outline-success" style="border-radius:10px; height:40px; text-align:center;">Отправить</button>
+    </form>
 </body>
 </html>
