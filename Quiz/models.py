@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.utils import timezone
+
 
 
 class Discipline(models.Model):
@@ -35,7 +35,6 @@ class Question(models.Model):
     def get_incorrect_answers(self):
         incorrect_answers = IncorrectAnswer.objects.filter(topic=self.topic).exclude(answer_text=self.correct_answer).order_by('?')[:3]
         return [answer.answer_text for answer in incorrect_answers]
-
 
 
 class Student(models.Model):

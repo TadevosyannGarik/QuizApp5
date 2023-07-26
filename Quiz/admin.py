@@ -32,6 +32,7 @@ class StudentAdmin(admin.ModelAdmin):
 class UserAdmin(UserAdmin):
     list_display = ['username', 'email', 'first_name', 'last_name', 'is_staff', 'student']
     search_fields = ['username', 'email', 'first_name', 'last_name']
+    fieldsets = ((None, {'fields': ('student',)}),) + UserAdmin.fieldsets
 
 
 admin.site.register(Discipline, DisciplineAdmin)

@@ -67,8 +67,10 @@ def success(request):
 
 @login_required
 def after_login(request):
-    user_is_student = request.user.groups.filter(name='Student').exists()
-    return render(request, 'Quiz/after_login.html', {'user_is_student': user_is_student})
+    is_teacher = request.user.groups.filter(name='Teacher').exists()
+    is_student = request.user.groups.filter(name='Student').exists()
+    return render(request, 'Quiz/after_login.html', {'is_teacher': is_teacher, 'is_student': is_student})
+
 
 
 def index(request):
