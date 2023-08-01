@@ -1,12 +1,18 @@
 import random
 from django.utils import timezone
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Discipline, Topic, Question, IncorrectAnswer, Student, User, QuizResult
+from .models import Discipline, Topic, Question, IncorrectAnswer, Student, User, QuizResult, Preset, PresetQuestion
 from .utils import save_discipline, save_topic, save_question
 from .forms import RegistrationForm
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib import messages
+from django.contrib.auth.models import Group
+
+
+def is_teacher(user):
+    return user.groups.filter(name="Teacher").exists()
 
 
 def register(request):
@@ -36,7 +42,13 @@ def register(request):
                 if existing_user:
                     return render(request, 'Quiz/student_registration.html', {'form': form, 'error': 'Пользователь с такими данными уже существует'})
 
-                new_user = User.objects.create_user(username=email, email=email, password=password, student=existing_student)
+                new_user = User.objects.create_user(username=email, email=email, password=password)
+                new_user.student = existing_student
+                new_user.save()
+
+                student_group = Group.objects.get(name='Student')
+                new_user.groups.add(student_group)
+
                 return redirect('login')
             else:
                 return render(request, 'Quiz/student_registration.html', {'form': form, 'error': 'Пользователь с такими данными не существует'})
@@ -72,20 +84,26 @@ def after_login(request):
     return render(request, 'Quiz/after_login.html', {'is_teacher': is_teacher, 'is_student': is_student})
 
 
-
 def index(request):
     return render(request, 'Quiz/index.html')
 
 
+@login_required
+@user_passes_test(is_teacher)
 def add_discipline(request):
     if request.method == 'POST':
         discipline_name = request.POST.get('name')
         if discipline_name:
             save_discipline(discipline_name)
             return redirect('discipline_list')
+    else:
+        if not is_teacher(request.user):
+            messages.error(request, "У вас не достаточно прав для добавления дисциплины")
     return render(request, 'Quiz/add_discipline.html')
 
 
+@login_required
+@user_passes_test(is_teacher)
 def add_topic(request):
     disciplines = Discipline.objects.all()
 
@@ -105,11 +123,15 @@ def topic_list(request):
     return render(request, 'Quiz/topic_list.html', {'topics': topics})
 
 
+@login_required
+@user_passes_test(is_teacher)
 def discipline_list(request):
     disciplines = Discipline.objects.all()
     return render(request, 'Quiz/discipline_list.html', {'disciplines': disciplines})
 
 
+@login_required
+@user_passes_test(is_teacher)
 def add_incorrect_answer(request):
     if request.method == 'POST':
         topic_id = request.POST.get('topic_id')
@@ -125,6 +147,8 @@ def add_incorrect_answer(request):
     return render(request, 'Quiz/add_incorrect_answer.html', {'topics': topics})
 
 
+@login_required
+@user_passes_test(is_teacher)
 def add_question(request):
     topics = Topic.objects.all()
 
@@ -135,10 +159,10 @@ def add_question(request):
         for i in range(1, question_count + 1):
             question_text = request.POST.get(f'question_text_{i}')
             correct_answer = request.POST.get(f'correct_answer_{i}')
-            question_points = int(request.POST.get(f'question_points_{i}'))  # New field for question points
+            question_points = int(request.POST.get(f'question_points_{i}'))
 
             if topic_id and question_text and correct_answer:
-                save_question(topic_id, question_text, correct_answer, question_points)  # Pass question_points to the save function
+                save_question(topic_id, question_text, correct_answer, question_points)
 
         return redirect('index')
 
@@ -200,3 +224,98 @@ def topic_detail(request, topic_id):
 
 def result(request):
     return render(request, 'Quiz/result.html')
+
+
+def generate_test(request):
+    topics = Topic.objects.all()
+
+    if request.method == 'POST':
+        name = request.POST.get('preset_name')
+        description = request.POST.get('preset_description')
+        selected_topic_id = request.POST.get('topic')
+        num_questions = int(request.POST.get('num_questions'))
+        selected_topic = Topic.objects.get(pk=selected_topic_id)
+        preset = Preset(name=name, description=description, topic=selected_topic)
+        preset.save()
+        questions_from_topic = selected_topic.question_set.all()
+        num_questions = min(num_questions, questions_from_topic.count())
+        selected_questions = questions_from_topic.order_by('?')[:num_questions]
+        for question in selected_questions:
+            preset_question = PresetQuestion(preset=preset, question=question)
+            preset_question.save()
+        return redirect('preset_list')
+
+    return render(request, 'Quiz/generate_test.html', {'topics': topics})
+
+
+def preset_list(request):
+    presets = Preset.objects.all()
+    return render(request, 'Quiz/preset_list.html', {'presets': presets})
+
+
+def preset_detail(request, preset_id):
+    preset = get_object_or_404(Preset, pk=preset_id)
+    preset_questions = PresetQuestion.objects.filter(preset=preset)
+    total_points = sum(question.question.points for question in preset_questions)
+    list_question = []
+
+    for preset_question in preset_questions:
+        question = preset_question.question
+        tmp_list = [question.question_text]
+
+        answers = [(question.correct_answer, question.points, question.id)]
+        incorrect_answers = question.get_incorrect_answers()
+        while len(answers) < 4 and len(incorrect_answers) > 0:
+            incorrect_answer = incorrect_answers.pop()
+            answers.append((incorrect_answer, 0, question.id))
+
+        random.shuffle(answers)
+        list_question.append(tmp_list + [answers])
+    random.shuffle(list_question)
+    if request.method == 'POST':
+        score = 0
+        for question_data in list_question:
+            selected_answer = request.POST.get("question_" + str(question_data[1][0][2]))
+            for ans_id, points, _ in question_data[1]:
+                if ans_id == selected_answer:
+                    score += points
+                    break
+
+        user = request.user
+        quiz_result = QuizResult.objects.create(
+            user=user,
+            topic=preset.topic,
+            score=score,
+            total_points=total_points,
+            date_completed=timezone.now()
+        )
+        quiz_result.save()
+
+        return render(request, 'Quiz/result.html', {'score': score, 'total_questions': len(preset_questions)})
+
+    return render(request, 'Quiz/preset_detail.html', {
+        'preset': preset,
+        'preset_questions': preset_questions,
+        'total_points': total_points,
+        'list_question': list_question,
+    })
+
+
+def edit_preset(request, preset_id):
+    preset = get_object_or_404(Preset, id=preset_id)
+
+    if request.method == 'POST':
+        preset_name = request.POST.get('name', '')
+        preset.name = preset_name
+        preset.save()
+
+        for preset_question in preset.presetquestion_set.all():
+            question_text = request.POST.get(f"question_text_{preset_question.question.id}", '')
+            correct_answer = request.POST.get(f"correct_answer_{preset_question.question.id}", '')
+            question = preset_question.question
+            question.question_text = question_text
+            question.correct_answer = correct_answer
+            question.save()
+        return redirect('preset_list')
+
+    return render(request, 'Quiz/edit_preset.html', {'preset': preset})

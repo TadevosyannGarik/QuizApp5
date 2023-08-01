@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+  <h1>Сгенерировать тест</h1>
+  <form method="post">
+    {% csrf_token %}
+    <label for="preset_name"> Название пресета </label>
+    <input type="text" id="preset_name" name="preset_name" required>
+    <br>
+    <label for="preset_description"> Описание пресета </label>
+    <textarea id="preset_description" name="preset_description" required></textarea>
+    <br>
+    <label for="topic"> Выберите топик </label>
+    <select id="topic" name="topic" required>
+      {% for topic in topics %}
+      <option value="{{ topic.id }}"> {{ topic.name }} </option>
+      {% endfor %}
+    </select>
+    <br>
+    <label for="num_questions"> Количество вопросов </label>
+    <input type="number" id="num_questions" name="num_questions" required>
+    <br>
+      <input type="submit" value="Сгенерировать тест">
+  </form>
+</body>
+</html>

@@ -2,24 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Topic Detail</title>
+    <title>Preset Detail</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 </head>
 <body>
-    <form method="post" action="{% url 'topic_detail' topic.id %}">
+    <form method="post">
         {% csrf_token %}
+        <h2>{{ preset.name }}</h2>
         <div id="questionContainer">
             {% for question_data in list_question %}
                 <div class="question {% if forloop.first %}active{% endif %}">
-                    <h2>{{ topic.name }}</h2>
                     <h5>Вопрос:</h5>
                     <p>{{ question_data.0 }}</p>
 
                     <h6>Варианты ответа:</h6>
                     <ul>
-                        {% for ans_id, is_correct in question_data.1 %}
+                        {% for ans_id, points, question_id in question_data.1 %}
                             <li>
-                                <input type="radio" name="question_{{ question_data.0 }}" value="{{ ans_id }}" required>
+                                <input type="radio" name="question_{{ question_id }}" value="{{ ans_id }}">
                                 {{ ans_id }}
                             </li>
                         {% endfor %}
@@ -29,13 +29,13 @@
         </div>
 
         <button type="button" id="nextBtn" class="btn btn-outline-success" style="border-radius:10px; height:40px; text-align:center;">Next</button>
-        <button type="submit" id="submitBtn" class="btn btn-outline-success" style="border-radius:10px; height:40px; text-align:center; display: none;">Отправить</button>
+        <button type="submit" class="btn btn-outline-success" style="border-radius:10px; height:40px; text-align:center; display: none;">Отправить</button>
     </form>
 
     <script>
         const questions = document.querySelectorAll('.question');
         const nextBtn = document.getElementById('nextBtn');
-        const submitBtn = document.getElementById('submitBtn');
+        const submitBtn = document.querySelector('button[type="submit"]');
         let currentQuestionIndex = 0;
 
         function showQuestion(index) {

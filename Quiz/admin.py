@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Discipline, Topic, Question, IncorrectAnswer, Student, User, QuizResult
+from .models import Discipline, Topic, Question, IncorrectAnswer, Student, User, QuizResult, Preset, PresetQuestion
 
+admin.site.register(Preset)
+admin.site.register(PresetQuestion)
 admin.site.register(QuizResult)
 
 
@@ -40,5 +42,4 @@ admin.site.register(Topic, TopicAdmin)
 admin.site.register(IncorrectAnswer, IncorrectAnswerAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(Student, StudentAdmin)
-
 admin.site.register(User, UserAdmin)

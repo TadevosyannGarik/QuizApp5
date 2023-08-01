@@ -37,6 +37,25 @@ class Question(models.Model):
         return [answer.answer_text for answer in incorrect_answers]
 
 
+class Preset(models.Model):
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    date_created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+class PresetQuestion(models.Model):
+    preset = models.ForeignKey(Preset, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    incorrect_answers = models.ManyToManyField(IncorrectAnswer)
+
+    def __str__(self):
+        return f"Preset: {self.preset.name} - Question: {self.question.question_text}"
+
+
 class Student(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)

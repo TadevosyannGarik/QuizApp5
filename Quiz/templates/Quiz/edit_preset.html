@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Preset</title>
+</head>
+<body>
+    <h1>Изменение пресета "{{ preset.name }}"</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        <label for="name">Название пресета:</label>
+        <input type="text" id="name" name="name" value="{{ preset.name }}"><br>
+
+        {% for preset_question in preset.presetquestion_set.all %}
+            <h2>Вопрос "{{ preset_question.question.question_text }}"</h2>
+            <input type="hidden" name="question_id_{{ preset_question.question.id }}" value="{{ preset_question.question.id }}">
+            <label for="question_text_{{ preset_question.question.id }}">Текст вопроса:</label>
+            <input type="text" id="question_text_{{ preset_question.question.id }}" name="question_text_{{ preset_question.question.id }}" value="{{ preset_question.question.question_text }}"><br>
+            <label for="correct_answer_{{ preset_question.question.id }}">Верный ответ:</label>
+            <input type="text" id="correct_answer_{{ preset_question.question.id }}" name="correct_answer_{{ preset_question.question.id }}" value="{{ preset_question.question.correct_answer }}"><br>
+        {% endfor %}
+
+        <input type="submit" value="Сохранить изменения">
+    </form>
+</body>
+</html>

@@ -18,7 +18,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-                        background-color: #f0f0f0;
 
         }
 
@@ -57,7 +56,6 @@
 
         input[type="text"], input[type="email"], input[type="password"], input[type="date"], input[type="submit"] {
             margin-bottom: 20px;
-                        background-color: #f0f0f0;
 
             padding: 5px;
             font-size: 18px;
@@ -80,7 +78,7 @@
             <form method="post">
                        {% csrf_token %}
   <h1 style="text-align: center;">Зарегистрироваться</h1>
-
+<br>
                 <label for="first_name"></label>
                 <input style="width: 500px; height:45px; border-radius: 10px;" class="form-control mx-auto"
                        placeholder="Имя" type="text" id="first_name" name="first_name">
@@ -107,7 +105,7 @@
 
                 <label for="password"></label>
                 <input style="width: 500px; height:45px; border-radius: 10px;" class="form-control mx-auto"
-                       placeholder="********" type="password" id="password" name="password"
+                       placeholder="Пароль" type="password" id="password" name="password"
                 <i style="font-size: 18px;" class="toggle-password fas fa-eye" onclick="togglePasswordVisibility()"></i>
 
                 <input style="width: 500px; height:45px; border-radius: 10px; " class="btn btn-outline-success" type="submit" value="Зарегистрироваться">

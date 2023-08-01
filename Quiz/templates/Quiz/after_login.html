@@ -21,8 +21,7 @@
     <h2>Главная страница</h2>
     <br>
     
-    {% if is_student %}
-        <!-- Display teacher buttons -->
+    {% if is_teacher %}
         <a href="{% url 'add_discipline' %}" class="btn btn-outline-dark mr-3"
            style="border-radius:10px; height:40px;">Добавить дисциплину</a><br>
         <br>
@@ -37,11 +36,9 @@
         <br>
         <a href="{% url 'add_question' %}" class="btn btn-outline-dark mr-3"
            style="border-radius:10px; height:40px;">Добавить вопрос</a><br>
-    {% elif is_teacher %}
-        <!-- Display student buttons -->
+    {% elif is_student %}
         <a href="{% url 'topic_list' %}" class="btn btn-outline-dark mr-3"
            style="border-radius:10px; height:40px;">Список тем</a><br>
-        <!-- Add other buttons for students here -->
     {% endif %}
 </div>
 </body>

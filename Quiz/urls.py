@@ -14,5 +14,10 @@ urlpatterns = [
     path('register/', views.register, name='student_registration'),
     path('success/', views.success, name='success'),
     path('login/', views.login_view, name='login'),
-    path('after/login', views.after_login, name='after_login')
+    path('after/login', views.after_login, name='after_login'),
+    path('generate-test/', views.generate_test, name='generate_test'),
+    path('preset_list/', views.preset_list, name='preset_list'),
+    path('preset/<int:preset_id>/', views.preset_detail, name='preset_detail'),
+    path('presets/<int:preset_id>/edit/', views.edit_preset, name='edit_preset'),
+
 ]
