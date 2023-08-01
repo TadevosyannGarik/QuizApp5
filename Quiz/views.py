@@ -316,6 +316,6 @@ def edit_preset(request, preset_id):
             question.question_text = question_text
             question.correct_answer = correct_answer
             question.save()
-        return redirect('preset_list')
+        return redirect('preset_list' )
 
     return render(request, 'Quiz/edit_preset.html', {'preset': preset})
