@@ -14,9 +14,9 @@
                     <p>{{ preset_question.question.question_text }}</p>
                     <ul>
                         <li>{{ preset_question.question.correct_answer }} (Верный ответ)</li>
-                        {% for incorrect_answer in preset_question.question.get_incorrect_answers %}
-                            <li>{{ incorrect_answer }}</li>
-                        {% endfor %}
+{% for incorrect_answer in preset_question.incorrect_answers.all %}
+    <li>{{ incorrect_answer }}</li>
+{% endfor %}
                     </ul>
                                 <a href="{% url 'edit_preset' preset.id %}">Изменить пресет</a>
 

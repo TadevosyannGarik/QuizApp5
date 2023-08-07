@@ -4,38 +4,92 @@
     <meta charset="UTF-8">
     <title>Preset Detail</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            margin: 20px;
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+        }
+
+        #questionContainer {
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 20px;
+        }
+
+        .question {
+            margin-bottom: 20px;
+            display: none;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+            font-size: 20px;
+        }
+
+        .question.active {
+            display: block;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            text-align: center;
+
+        }
+
+        h5 {
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+
+
+
+    </style>
 </head>
 <body>
     <form method="post">
         {% csrf_token %}
-        <h2>{{ preset.name }}</h2>
         <div id="questionContainer">
-            {% for question_data in list_question %}
+            <h2> {{ preset.name }}</h2>
+            {% for question_id, question_data in question_dict.items %}
                 <div class="question {% if forloop.first %}active{% endif %}">
                     <h5>Вопрос:</h5>
                     <p>{{ question_data.0 }}</p>
 
                     <h6>Варианты ответа:</h6>
                     <ul>
-                        {% for ans_id, points, question_id in question_data.1 %}
+                        {% for ans_id, points, _ in question_data.1 %}
                             <li>
                                 <input type="radio" name="question_{{ question_id }}" value="{{ ans_id }}">
                                 {{ ans_id }}
                             </li>
                         {% endfor %}
                     </ul>
+
+                    {% if forloop.last %}
+                        <button type="submit" class="btn btn-outline-success" style="border-radius:10px; height:40px; text-align:center;">Отправить</button>
+                    {% else %}
+                        <button type="button" class="btn btn-outline-dark next-btn" style="border-radius:10px; height:40px; text-align:center;">Следующий вопрос <i class="fa-solid fa-chevron-right"></i></button>
+                    {% endif %}
                 </div>
             {% endfor %}
         </div>
-
-        <button type="button" id="nextBtn" class="btn btn-outline-success" style="border-radius:10px; height:40px; text-align:center;">Next</button>
-        <button type="submit" class="btn btn-outline-success" style="border-radius:10px; height:40px; text-align:center; display: none;">Отправить</button>
     </form>
 
     <script>
         const questions = document.querySelectorAll('.question');
-        const nextBtn = document.getElementById('nextBtn');
-        const submitBtn = document.querySelector('button[type="submit"]');
+        const nextBtns = document.querySelectorAll('.next-btn');
         let currentQuestionIndex = 0;
 
         function showQuestion(index) {
@@ -46,20 +100,21 @@
                     question.style.display = 'none';
                 }
             });
-
-            nextBtn.style.display = index < questions.length - 1 ? 'block' : 'none';
-            submitBtn.style.display = index === questions.length - 1 ? 'block' : 'none';
         }
 
-        showQuestion(currentQuestionIndex);
-
-        nextBtn.addEventListener('click', () => {
+        function onNextClick() {
             currentQuestionIndex++;
             if (currentQuestionIndex >= questions.length) {
                 currentQuestionIndex = 0;
             }
             showQuestion(currentQuestionIndex);
+        }
+
+        nextBtns.forEach((btn) => {
+            btn.addEventListener('click', onNextClick);
         });
+
+        showQuestion(currentQuestionIndex);
     </script>
 </body>
 </html>

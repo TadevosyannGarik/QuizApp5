@@ -120,18 +120,46 @@
             text-align: center;
         }
 
+
+    @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-7px);
+    }
+    60% {
+        transform: translateY(-3px);
+    }
+}
+
+.animated i {
+    font-size: 20px;
+}
+
+.animated:hover i {
+    animation: bounce 0.6s;
+}
     </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="navbar-left">
-            <span class="navbar-greeting">РЭУ имени Г.В. Плеханова</span>
+            <span class="navbar-greeting ">РЭУ имени Г.В. Плеханова</span>
         </div>
         <div class="navbar-right">
-            <a href="{% url 'login' %}" class="nav-item"><i class="fa-solid fa-arrow-right-to-bracket"></i> Войти</a>
-            <a href="{% url 'student_registration' %}" class="nav-item"><i class="fa-solid fa-user-plus"></i> Зарегистрироваться</a>
-            <a href="#" class="nav-item"><i class="fa-solid fa-users"></i> О нас</a>
-            <a href="#" class="nav-item"><i class="fa-solid fa-phone-volume"></i> Связаться с нами</a>
+            <a href="{% url 'login' %}" class="nav-item animated">
+                <i class="fa-solid fa-arrow-right-to-bracket"></i> Войти
+            </a>
+            <a href="{% url 'student_registration' %}" class="nav-item animated">
+                <i class="fa-solid fa-user-plus"></i> Зарегистрироваться
+            </a>
+            <a href="#" class="nav-item animated">
+                <i class="fa-solid fa-users"></i> О нас
+            </a>
+            <a href="#" class="nav-item animated">
+                <i class="fa-solid fa-phone"></i> Связаться с нами
+            </a>
         </div>
     </nav>
     <div class="container text-center" style="max-width: 673px;">

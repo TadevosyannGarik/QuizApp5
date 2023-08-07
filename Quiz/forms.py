@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import inlineformset_factory
-from .models import Discipline, Topic, Question, IncorrectAnswer, User
+from .models import Discipline, Topic, Question, IncorrectAnswer, User, Faculty
 from .models import User, Student
 
 
@@ -42,6 +42,7 @@ class RegistrationForm(forms.Form):
     patronymic = forms.CharField(max_length=100)
     date_of_birth = forms.DateField()
     course = forms.CharField(max_length=100)
+    faculty = forms.ModelChoiceField(queryset=Faculty.objects.all())
     email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput)
 

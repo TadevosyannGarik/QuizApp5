@@ -18,23 +18,33 @@ class Topic(models.Model):
         return self.name
 
 
-class IncorrectAnswer(models.Model):
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
-    answer_text = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.answer_text
-
-
 class Question(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     question_text = models.TextField()
     correct_answer = models.CharField(max_length=100, default='')
     points = models.IntegerField(default=0)
 
+    def __str__(self):
+        return self.question_text
+
     def get_incorrect_answers(self):
-        incorrect_answers = IncorrectAnswer.objects.filter(topic=self.topic).exclude(answer_text=self.correct_answer).order_by('?')[:3]
-        return [answer.answer_text for answer in incorrect_answers]
+        return list(self.incorrect_answers.filter(topic=self.topic))
+
+
+class Answer(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    answer_text = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.answer_text
+
+
+class IncorrectAnswer(models.Model):
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    answer_text = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.answer_text
 
 
 class Preset(models.Model):
@@ -50,10 +60,17 @@ class Preset(models.Model):
 class PresetQuestion(models.Model):
     preset = models.ForeignKey(Preset, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    incorrect_answers = models.ManyToManyField(IncorrectAnswer)
+    incorrect_answers = models.ManyToManyField(IncorrectAnswer, blank=True)
 
     def __str__(self):
         return f"Preset: {self.preset.name} - Question: {self.question.question_text}"
+
+
+class Faculty(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
 
 
 class Student(models.Model):
@@ -62,6 +79,10 @@ class Student(models.Model):
     patronymic = models.CharField(max_length=100)
     date_of_birth = models.DateField()
     course = models.CharField(max_length=100, null=True)
+    faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.last_name} {self.first_name}"
 
 
 class User(AbstractUser):

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Discipline, Topic, Question, IncorrectAnswer, Student, User, QuizResult, Preset, PresetQuestion
-
+from .models import Discipline, Topic, Question, IncorrectAnswer, Student, User, QuizResult, Preset, PresetQuestion, Faculty
+admin.site.register(Faculty)
 admin.site.register(Preset)
 admin.site.register(PresetQuestion)
 admin.site.register(QuizResult)
