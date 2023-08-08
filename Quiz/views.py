@@ -2,7 +2,8 @@ import random
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Discipline, Topic, Question, IncorrectAnswer, Student, User, QuizResult, Preset, PresetQuestion
+from .models import Discipline, Topic, Question, IncorrectAnswer, Student, User, QuizResult, Preset, PresetQuestion, \
+    Faculty
 from .utils import save_discipline, save_topic, save_question
 from .forms import RegistrationForm
 from django.contrib.auth import authenticate, login
@@ -229,38 +230,59 @@ def result(request):
 
 
 def generate_test(request):
+    faculties = Faculty.objects.all()
     topics = Topic.objects.all()
 
     if request.method == 'POST':
+        selected_faculty_id = request.POST.get('faculty')
+        selected_faculty = Faculty.objects.get(pk=selected_faculty_id)
+
         name = request.POST.get('preset_name')
         description = request.POST.get('preset_description')
         selected_topic_id = request.POST.get('topic')
         num_questions = int(request.POST.get('num_questions'))
+
         selected_topic = Topic.objects.get(pk=selected_topic_id)
-        preset = Preset(name=name, description=description, topic=selected_topic)
+
+        preset = Preset(name=name, description=description, faculty=selected_faculty, topic=selected_topic)
         preset.save()
+
         questions_from_topic = selected_topic.question_set.all()
         num_questions = min(num_questions, questions_from_topic.count())
         selected_questions = questions_from_topic.order_by('?')[:num_questions]
         all_incorrect_answers = list(IncorrectAnswer.objects.filter(topic=selected_topic))
+
         for question in selected_questions:
             preset_question = PresetQuestion(preset=preset, question=question)
             preset_question.save()
+
             num_incorrect_answers_to_select = min(3, len(all_incorrect_answers))
             selected_incorrect_answers = random.sample(all_incorrect_answers, num_incorrect_answers_to_select)
+
             for incorrect_answer in selected_incorrect_answers:
                 preset_question.incorrect_answers.add(incorrect_answer)
-            all_incorrect_answers = [answer for answer in all_incorrect_answers if
-                                     answer not in selected_incorrect_answers]
+
+            all_incorrect_answers = [answer for answer in all_incorrect_answers if answer not in selected_incorrect_answers]
 
         return redirect('preset_list')
 
-    return render(request, 'Quiz/generate_test.html', {'topics': topics})
+    return render(request, 'Quiz/generate_test.html', {'faculties': faculties, 'topics': topics})
 
 
 def preset_list(request):
     presets = Preset.objects.all()
     return render(request, 'Quiz/preset_list.html', {'presets': presets})
+
+
+def faculty_preset_list(request):
+    user = request.user
+    if hasattr(user, 'student'):
+        user_faculty = user.student.faculty
+        presets = Preset.objects.filter(faculty=user_faculty)
+    else:
+        presets = Preset.objects.none()
+
+    return render(request, "Quiz/faculty_preset_list.html", {'presets': presets})
 
 
 def preset_detail(request, preset_id):

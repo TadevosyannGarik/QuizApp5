@@ -19,5 +19,5 @@ urlpatterns = [
     path('preset_list/', views.preset_list, name='preset_list'),
     path('preset/<int:preset_id>/', views.preset_detail, name='preset_detail'),
     path('presets/<int:preset_id>/edit/', views.edit_preset, name='edit_preset'),
-
+    path('faculty/preset/list', views.faculty_preset_list, name='faculty_preset_list')
 ]

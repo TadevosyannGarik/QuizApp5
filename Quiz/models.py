@@ -47,8 +47,16 @@ class IncorrectAnswer(models.Model):
         return self.answer_text
 
 
+class Faculty(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
 class Preset(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE, default="")  # Add this field
     name = models.CharField(max_length=100)
     description = models.TextField()
     date_created = models.DateTimeField(auto_now_add=True)
@@ -65,12 +73,6 @@ class PresetQuestion(models.Model):
     def __str__(self):
         return f"Preset: {self.preset.name} - Question: {self.question.question_text}"
 
-
-class Faculty(models.Model):
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
 
 
 class Student(models.Model):

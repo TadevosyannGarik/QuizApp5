@@ -8,21 +8,19 @@
     <h1>Список пресетов</h1>
     <ul>
         {% for preset in presets %}
-            <li>
-                <strong>{{ preset.name }}</strong><br>
-                {% for preset_question in preset.presetquestion_set.all %}
-                    <p>{{ preset_question.question.question_text }}</p>
-                    <ul>
-                        <li>{{ preset_question.question.correct_answer }} (Верный ответ)</li>
-{% for incorrect_answer in preset_question.incorrect_answers.all %}
-    <li>{{ incorrect_answer }}</li>
-{% endfor %}
-                    </ul>
-                                <a href="{% url 'edit_preset' preset.id %}">Изменить пресет</a>
-
-                 <a href="{% url 'preset_detail' preset.id %}">Начать тест</a>
+        <li>
+            <strong>{{ preset.name }}</strong><br>
+            {% for preset_question in preset.presetquestion_set.all %}
+            <p>{{ preset_question.question.question_text }}</p>
+            <ul>
+                <li>{{ preset_question.question.correct_answer }} (Верный ответ)</li>
+                {% for incorrect_answer in preset_question.incorrect_answers.all %}
+                <li>{{ incorrect_answer }}</li>
                 {% endfor %}
-            </li>
+            </ul>
+            {% endfor %}
+            <a href="{% url 'edit_preset' preset.id %}">Изменить пресет</a>
+        </li>
         {% endfor %}
     </ul>
 </body>

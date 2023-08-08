@@ -6,25 +6,28 @@
 </head>
 <body>
   <h1>Сгенерировать тест</h1>
-  <form method="post">
-    {% csrf_token %}
-    <label for="preset_name"> Название пресета </label>
-    <input type="text" id="preset_name" name="preset_name" required>
-    <br>
-    <label for="preset_description"> Описание пресета </label>
-    <textarea id="preset_description" name="preset_description" required></textarea>
-    <br>
-    <label for="topic"> Выберите топик </label>
-    <select id="topic" name="topic" required>
-      {% for topic in topics %}
-      <option value="{{ topic.id }}"> {{ topic.name }} </option>
-      {% endfor %}
-    </select>
-    <br>
-    <label for="num_questions"> Количество вопросов </label>
-    <input type="number" id="num_questions" name="num_questions" required>
-    <br>
-      <input type="submit" value="Сгенерировать тест">
-  </form>
+<form method="post">
+  {% csrf_token %}
+  <label for="faculty">Выберите факультет</label>
+  <select name="faculty" required>
+    {% for faculty in faculties %}
+    <option value="{{ faculty.id }}">{{ faculty.name }}</option>
+    {% endfor %}
+  </select><br>
+  <label for="preset_name">Название пресета:</label>
+  <input type="text" name="preset_name" required><br>
+  <label for="preset_description">Описание пресета:</label>
+  <input type="text" name="preset_description" required><br>
+  <label for="topic">Выберите топик:</label>
+  <select name="topic" required>
+    {% for topic in topics %}
+    <option value="{{ topic.id }}">{{ topic.name }}</option>
+    {% endfor %}
+  </select><br>
+  <label for="num_questions">Колличество вопросв:</label>
+  <input type="number" name="num_questions" required><br>
+  <button type="submit">Сгенерировать тест</button>
+</form>
+
 </body>
 </html>
