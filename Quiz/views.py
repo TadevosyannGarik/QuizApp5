@@ -60,7 +60,6 @@ def register(request):
     return render(request, 'Quiz/student_registration.html', {'form': form})
 
 
-
 def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
@@ -339,21 +338,23 @@ def edit_preset(request, preset_id):
         preset.save()
 
         for preset_question in preset.presetquestion_set.all():
-            question_text = request.POST.get(f"question_text_{preset_question.question.id}", '')
-            correct_answer = request.POST.get(f"correct_answer_{preset_question.question.id}", '')
-            question = preset_question.question
-            question.question_text = question_text
-            question.correct_answer = correct_answer
-            question.save()
-            preset_question.incorrect_answers.clear()
-            incorrect_answers = request.POST.getlist(f"incorrect_answers_{preset_question.question.id}")
-            for answer_text in incorrect_answers:
-                incorrect_answer, _ = IncorrectAnswer.objects.get_or_create(
-                    topic=preset.topic,
-                    answer_text=answer_text
-                )
-                preset_question.incorrect_answers.add(incorrect_answer)
+            question_id = request.POST.get(f"question_select_{preset_question.id}")
+            correct_answer = request.POST.get(f"correct_answer_{preset_question.id}", '')
+            question = Question.objects.get(id=question_id)
+            preset_question.question = question
+            preset_question.correct_answer = correct_answer
+            preset_question.save()
+            selected_incorrect_answer_ids = request.POST.getlist(f"selected_incorrect_answer_{preset_question.id}[]")
+            incorrect_answers = IncorrectAnswer.objects.filter(id__in=selected_incorrect_answer_ids)
+            preset_question.incorrect_answers.set(incorrect_answers)
 
         return redirect('preset_list')
 
-    return render(request, 'Quiz/edit_preset.html', {'preset': preset})
+    all_questions = Question.objects.all()
+    all_incorrect_answers = IncorrectAnswer.objects.filter(topic=preset.topic)
+
+    return render(request, 'Quiz/edit_preset.html', {
+        'preset': preset,
+        'all_questions': all_questions,
+        'all_incorrect_answers': all_incorrect_answers,
+    })

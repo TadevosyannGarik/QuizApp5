@@ -1,34 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Редактировать пресет</title>
+    <title>Редактировать предустановку</title>
 </head>
 <body>
     <h1>Редактировать пресет "{{ preset.name }}"</h1>
-  <form method="post">
-  {% csrf_token %}
-  <label for="name">Preset Name:</label>
-  <input type="text" id="name" name="name" value="{{ preset.name }}">
-  <br>
-  <br>
-  {% for preset_question in preset.presetquestion_set.all %}
-    <label for="question_text_{{ preset_question.question.id }}">Question:</label>
-    <input type="text" id="question_text_{{ preset_question.question.id }}" name="question_text_{{ preset_question.question.id }}" value="{{ preset_question.question.question_text }}">
+    <form method="post">
+        {% csrf_token %}
+        <label for="name">Название пресета:</label>
+        <input type="text" id="name" name="name" value="{{ preset.name }}">
+        <br><br>
+        {% for preset_question in preset.presetquestion_set.all %}
+            <label for="question_select_{{ preset_question.id }}">Вопрос:</label>
+            <select id="question_select_{{ preset_question.id }}" name="question_select_{{ preset_question.id }}">
+                {% for question in all_questions %}
+                    <option value="{{ question.id }}" {% if question.id == preset_question.question.id %}selected{% endif %}>{{ question.question_text }}</option>
+                {% endfor %}
+            </select>
+            <br>
+            <label for="correct_answer_{{ preset_question.id }}">Верный ответ:</label>
+            <input type="text" id="correct_answer_{{ preset_question.id }}" name="correct_answer_{{ preset_question.id }}" value="{{ preset_question.correct_answer }}">
+            <br>
+            <label>Неверные ответы:</label>
+            <div>
+                <ul>
+                {% for incorrect_answer in preset_question.incorrect_answers.all %}
+                    <li id="answer_{{ incorrect_answer.id }}">
+                        <span id="answer_text_{{ incorrect_answer.id }}">{{ incorrect_answer.answer_text }}</span>
+                        <button type="button" onclick="showIncorrectAnswers('{{ preset_question.id }}', '{{ incorrect_answer.id }}');">Изменить</button>
+                        <span id="edit_{{ incorrect_answer.id }}" style="display: none;">
+                            <select id="incorrect_answer_select_{{ incorrect_answer.id }}" onchange="applySelectedAnswer('{{ incorrect_answer.id }}', '{{ preset_question.id }}');">
+                                <option value="" selected>Выберите неверный ответ</option>
+                                {% for answer in all_incorrect_answers %}
+                                    <option value="{{ answer.id }}" {% if answer.id == incorrect_answer.id %}selected{% endif %}>{{ answer.answer_text }}</option>
+                                {% endfor %}
+                            </select>
+                        </span>
+                    </li>
+                {% endfor %}
+                </ul>
+            </div>
+            <br>
+        {% endfor %}
+        <button type="submit">Сохранить</button>
+    </form>
     <br>
-    <label for="correct_answer_{{ preset_question.question.id }}">Correct Answer:</label>
-    <input type="text" id="correct_answer_{{ preset_question.question.id }}" name="correct_answer_{{ preset_question.question.id }}" value="{{ preset_question.question.correct_answer }}">
-    <br>
-    <label>Incorrect Answers:</label>
-    {% for incorrect_answer in preset_question.incorrect_answers.all %}
-      <input type="text" name="incorrect_answers_{{ preset_question.question.id }}" value="{{ incorrect_answer.answer_text }}">
-      <br>
-    {% endfor %}
-    <br><br>
-  {% endfor %}
-  <button type="submit">Save</button>
-</form>
+    <a href="{% url 'preset_list' %}">Назад к списку пресетов</a>
 
-    <br>
-    <a href="{% url 'preset_list' %}">Назад к списку предустановок</a>
+    <script>
+        function showIncorrectAnswers(presetQuestionId, incorrectAnswerId) {
+            var editSpan = document.getElementById("edit_" + incorrectAnswerId);
+            editSpan.style.display = "block";
+        }
+
+        function applySelectedAnswer(incorrectAnswerId, presetQuestionId) {
+            var select = document.getElementById("incorrect_answer_select_" + incorrectAnswerId);
+            var selectedOption = select.options[select.selectedIndex];
+            var newAnswerText = selectedOption.text;
+
+            var answerTextSpan = document.getElementById("answer_text_" + incorrectAnswerId);
+            answerTextSpan.textContent = newAnswerText;
+
+            var editSpan = document.getElementById("edit_" + incorrectAnswerId);
+            editSpan.style.display = "none";
+        }
+    </script>
 </body>
 </html>
