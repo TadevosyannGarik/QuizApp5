@@ -340,18 +340,22 @@ def edit_preset(request, preset_id):
         for preset_question in preset.presetquestion_set.all():
             question_id = request.POST.get(f"question_select_{preset_question.id}")
             correct_answer = request.POST.get(f"correct_answer_{preset_question.id}", '')
+
             question = Question.objects.get(id=question_id)
             preset_question.question = question
             preset_question.correct_answer = correct_answer
-            preset_question.save()
-            selected_incorrect_answer_ids = request.POST.getlist(f"selected_incorrect_answer_{preset_question.id}[]")
-            incorrect_answers = IncorrectAnswer.objects.filter(id__in=selected_incorrect_answer_ids)
-            preset_question.incorrect_answers.set(incorrect_answers)
+
+            selected_incorrect_answer_id = request.POST.get(f"incorrect_answer_select_{preset_question.id}")
+            if selected_incorrect_answer_id:
+                incorrect_answer = IncorrectAnswer.objects.get(id=selected_incorrect_answer_id)
+                preset_question.incorrect_answers.clear()
+                preset_question.incorrect_answers.add(incorrect_answer)
+                preset_question.save()
 
         return redirect('preset_list')
 
     all_questions = Question.objects.all()
-    all_incorrect_answers = IncorrectAnswer.objects.filter(topic=preset.topic)
+    all_incorrect_answers = IncorrectAnswer.objects.all()
 
     return render(request, 'Quiz/edit_preset.html', {
         'preset': preset,
