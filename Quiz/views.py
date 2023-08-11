@@ -70,6 +70,8 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 return redirect('after_login')
+        else:
+            return render(request, 'Quiz/login.html',{'error': 'Не Верный Email или пароль'})
     else:
         form = AuthenticationForm()
     return render(request, 'Quiz/login.html', {'form': form})
