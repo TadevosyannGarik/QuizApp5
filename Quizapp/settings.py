@@ -76,8 +76,12 @@ WSGI_APPLICATION = 'Quizapp.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'DjangoQuizApp',
+        'USER': 'postgres',
+        'PASSWORD': 'asda',
+        'HOST': 'localhost',
+        'POST': '5432'
     }
 }
 
@@ -104,7 +108,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'ru'
+LANGUAGE_CODE = 'en'
 
 TIME_ZONE = 'UTC'
 

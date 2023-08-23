@@ -9,7 +9,8 @@ from .forms import RegistrationForm
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
 
 
 def is_teacher(user):
@@ -65,7 +66,9 @@ def login_view(request):
         form = AuthenticationForm(data=request.POST)
         if form.is_valid():
             email = form.cleaned_data['username']
+            print(email)
             password = form.cleaned_data['password']
+            print(password)
             user = authenticate(request, username=email, password=password)
             if user is not None:
                 login(request, user)
@@ -81,11 +84,91 @@ def success(request):
     return render(request, 'Quiz/success.html')
 
 
+def students_passed_test(request, preset_id):
+    preset = Preset.objects.get(id=preset_id)
+    student_results = QuizResult.objects.filter(preset=preset)
+    passed_users = [
+        {
+            "user": result.user,
+            "score": result.score,
+            "grade": result.grade,
+        }
+        for result in student_results
+    ]
+
+    return render(
+        request,
+        'Quiz/students_passed_test.html',
+        {"preset": preset, "passed_users": passed_users}
+    )
+
+
 @login_required
 def after_login(request):
     is_teacher = request.user.groups.filter(name='Teacher').exists()
     is_student = request.user.groups.filter(name='Student').exists()
-    return render(request, 'Quiz/after_login.html', {'is_teacher': is_teacher, 'is_student': is_student})
+
+    student_name = None
+
+    if is_student:
+        student = request.user.student
+        if student:
+            student_name = f"{student.first_name} {student.last_name}"
+
+    user_allowed_disciplines = []
+    all_disciplines = Discipline.objects.all()
+
+    for discipline in all_disciplines:
+        permission_codename = f'view_{discipline.name.replace(" ", "_").lower()}'
+        user_has_permission = request.user.has_perm(f'Quiz.{permission_codename}')
+
+        if user_has_permission:
+            user_allowed_disciplines.append(discipline)
+
+    user_allowed_topic_ids = []
+    topics = Topic.objects.all()
+
+    for topic in topics:
+        permission_codename = f'view_topic_{topic.id}'
+        if request.user.has_perm(f'Quiz.{permission_codename}'):
+            user_allowed_topic_ids.append(topic.id)
+
+    user_allowed_topics = topics.filter(id__in=user_allowed_topic_ids)
+
+    user_results = QuizResult.objects.filter(user=request.user)
+
+    presets = Preset.objects.all()
+    presets_data = []
+
+    for preset in presets:
+        questions_in_preset = PresetQuestion.objects.filter(preset=preset)
+        total_questions = questions_in_preset.count()
+        total_score = sum(question.question.points for question in questions_in_preset)
+
+        presets_data.append({
+            'id': preset.id,
+            'name': preset.name,
+            'total_questions': total_questions,
+            'total_score': total_score,
+        })
+
+    user = request.user
+    if hasattr(user, 'student'):
+        user_faculty = user.student.faculty
+        faculty_presets = Preset.objects.filter(faculty=user_faculty)
+    else:
+        faculty_presets = Preset.objects.none()
+
+    faculties = Faculty.objects.all()
+
+    return render(request, 'Quiz/after_login.html', {
+        'is_teacher': is_teacher, 'is_student': is_student,
+        'student_name': student_name,
+        'disciplines': user_allowed_disciplines, 'topics': user_allowed_topics,
+        'user_results': user_results, 'faculties': faculties,
+        'presets_data': presets_data,
+        'faculty_presets': faculty_presets,
+    })
 
 
 def index(request):
@@ -95,14 +178,32 @@ def index(request):
 @login_required
 @user_passes_test(is_teacher)
 def add_discipline(request):
+    print("User:", request.user)
+    print("Преподаватель ?", is_teacher(request.user))
+
     if request.method == 'POST':
         discipline_name = request.POST.get('name')
         if discipline_name:
-            save_discipline(discipline_name)
-            return redirect('discipline_list')
+            discipline = save_discipline(discipline_name)
+
+            permission_codename = f'view_{discipline.name.replace(" ", "_").lower()}'
+            print(permission_codename)
+            permission_name = f'Can view {discipline.name}'
+            print(permission_name)
+            content_type = ContentType.objects.get(app_label='Quiz', model='discipline')
+            print(content_type)
+            permission, created = Permission.objects.get_or_create(
+                codename=permission_codename,
+                name=permission_name,
+                content_type=content_type,
+            )
+
+            request.user.user_permissions.add(permission)
+            print(f"Разрешение добавлено пользователю: {request.user.email}, Разрешение: {permission_codename}")
+
+            return redirect('after_login')
     else:
-        if not is_teacher(request.user):
-            messages.error(request, "У вас не достаточно прав для добавления дисциплины")
+        messages.error(request, "У вас не достаточно прав для добавления дисциплины")
     return render(request, 'Quiz/add_discipline.html')
 
 
@@ -116,8 +217,22 @@ def add_topic(request):
         topic_name = request.POST.get('name')
 
         if discipline_id and topic_name:
-            save_topic(discipline_id, topic_name)
-            return redirect('topic_list')
+            discipline = Discipline.objects.get(id=discipline_id)
+            save_topic(discipline_id, topic_name, user=request.user)
+
+            permission_codename = f'view_{topic_name.replace(" ", "_").lower()}'
+            permission_name = f'Can view {topic_name}'
+            content_type = ContentType.objects.get(app_label='Quiz', model='topic')
+            permission, created = Permission.objects.get_or_create(
+                codename=permission_codename,
+                name=permission_name,
+                content_type=content_type,
+            )
+
+            request.user.user_permissions.add(permission)
+            print(f"Разрешение добавлено пользователю: {request.user.email}, Разрешение {permission_codename}")
+
+            return redirect('after_login')
 
     return render(request, 'Quiz/add_topic.html', {'disciplines': disciplines})
 
@@ -128,10 +243,20 @@ def topic_list(request):
 
 
 @login_required
-@user_passes_test(is_teacher)
 def discipline_list(request):
-    disciplines = Discipline.objects.all()
-    return render(request, 'Quiz/discipline_list.html', {'disciplines': disciplines})
+    user_allowed_disciplines = []
+
+    all_disciplines = Discipline.objects.all()
+
+    for discipline in all_disciplines:
+        permission_codename = f'view_{discipline.name.replace(" ", "_").lower()}'
+        user_has_permission = request.user.has_perm(f'Quiz.{permission_codename}')
+        print(f"Дисциплина: {discipline.name}, User: {request.user.email}, Имеет разрешение: {user_has_permission}")
+
+        if user_has_permission:
+            user_allowed_disciplines.append(discipline)
+
+    return render(request, 'Quiz/discipline_list.html', {'disciplines': user_allowed_disciplines})
 
 
 @login_required
@@ -232,7 +357,15 @@ def result(request):
 
 def generate_test(request):
     faculties = Faculty.objects.all()
-    topics = Topic.objects.all()
+    user_allowed_topics = []
+
+    all_topics = Topic.objects.all()
+
+    for topic in all_topics:
+        permission_codename = f'view_topic_{topic.id}'
+        user_has_permission = request.user.has_perm(f'Quiz.{permission_codename}')
+        if user_has_permission:
+            user_allowed_topics.append(topic)
 
     if request.method == 'POST':
         selected_faculty_id = request.POST.get('faculty')
@@ -253,6 +386,8 @@ def generate_test(request):
         selected_questions = questions_from_topic.order_by('?')[:num_questions]
         all_incorrect_answers = list(IncorrectAnswer.objects.filter(topic=selected_topic))
 
+        selected_incorrect_answers_dict = {}
+
         for question in selected_questions:
             preset_question = PresetQuestion(preset=preset, question=question)
             preset_question.save()
@@ -260,14 +395,15 @@ def generate_test(request):
             num_incorrect_answers_to_select = min(3, len(all_incorrect_answers))
             selected_incorrect_answers = random.sample(all_incorrect_answers, num_incorrect_answers_to_select)
 
+            selected_incorrect_answers_dict[question.id] = selected_incorrect_answers
+            print(selected_incorrect_answers)
             for incorrect_answer in selected_incorrect_answers:
                 preset_question.incorrect_answers.add(incorrect_answer)
 
-            all_incorrect_answers = [answer for answer in all_incorrect_answers if answer not in selected_incorrect_answers]
-
         return redirect('preset_list')
 
-    return render(request, 'Quiz/generate_test.html', {'faculties': faculties, 'topics': topics})
+    context = {'faculties': faculties, 'user_allowed_topics': user_allowed_topics}
+    return render(request, 'Quiz/generate_test.html', context)
 
 
 def preset_list(request):
@@ -316,7 +452,7 @@ def preset_detail(request, preset_id):
         user = request.user
         quiz_result = QuizResult.objects.create(
             user=user,
-            topic=preset.topic,
+            preset=preset,
             score=score,
             total_points=total_points,
             date_completed=timezone.now()
@@ -347,12 +483,15 @@ def edit_preset(request, preset_id):
             preset_question.question = question
             preset_question.correct_answer = correct_answer
 
-            selected_incorrect_answer_id = request.POST.get(f"incorrect_answer_select_{preset_question.id}")
-            if selected_incorrect_answer_id:
-                incorrect_answer = IncorrectAnswer.objects.get(id=selected_incorrect_answer_id)
-                preset_question.incorrect_answers.clear()
+            selected_incorrect_answer_ids = request.POST.getlist(f"incorrect_answer_select_{preset_question.id}")
+            selected_incorrect_answers = IncorrectAnswer.objects.filter(id__in=selected_incorrect_answer_ids)
+
+            preset_question.incorrect_answers.clear()
+
+            for incorrect_answer in selected_incorrect_answers:
                 preset_question.incorrect_answers.add(incorrect_answer)
-                preset_question.save()
+
+            preset_question.save()
 
         return redirect('preset_list')
 
@@ -364,3 +503,4 @@ def edit_preset(request, preset_id):
         'all_questions': all_questions,
         'all_incorrect_answers': all_incorrect_answers,
     })
+

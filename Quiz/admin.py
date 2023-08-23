@@ -1,10 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import Discipline, Topic, Question, IncorrectAnswer, Student, User, QuizResult, Preset, PresetQuestion, Faculty
-admin.site.register(Faculty)
-admin.site.register(Preset)
-admin.site.register(PresetQuestion)
-admin.site.register(QuizResult)
+from django.contrib.auth.models import Permission
 
 
 class DisciplineAdmin(admin.ModelAdmin):
@@ -37,9 +34,14 @@ class UserAdmin(UserAdmin):
     fieldsets = ((None, {'fields': ('student',)}),) + UserAdmin.fieldsets
 
 
+admin.site.register(Permission)
+admin.site.register(User, UserAdmin)
+admin.site.register(Student, StudentAdmin)
+admin.site.register(Faculty)
 admin.site.register(Discipline, DisciplineAdmin)
 admin.site.register(Topic, TopicAdmin)
-admin.site.register(IncorrectAnswer, IncorrectAnswerAdmin)
 admin.site.register(Question, QuestionAdmin)
-admin.site.register(Student, StudentAdmin)
-admin.site.register(User, UserAdmin)
+admin.site.register(IncorrectAnswer, IncorrectAnswerAdmin)
+admin.site.register(Preset)
+admin.site.register(PresetQuestion)
+admin.site.register(QuizResult)

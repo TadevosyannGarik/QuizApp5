@@ -1,5 +1,6 @@
-from django.shortcuts import redirect, render
 from .models import Discipline, Topic, IncorrectAnswer, Question
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import Permission
 
 
 def save_discipline(discipline_name):
@@ -8,10 +9,23 @@ def save_discipline(discipline_name):
     return discipline
 
 
-def save_topic(discipline_id, name):
+def save_topic(discipline_id, name, user=None):
     discipline = Discipline.objects.get(id=discipline_id)
     topic = Topic(discipline=discipline, name=name)
     topic.save()
+    topic.save()
+    permission_codename = f'view_topic_{topic.id}'
+    permission_name = f'Can view topic: {topic.name}'
+    content_type = ContentType.objects.get_for_model(topic)
+    permission, _ = Permission.objects.get_or_create(
+        codename=permission_codename,
+        name=permission_name,
+        content_type=content_type,
+    )
+
+    if user:
+        user.user_permissions.add(permission)
+
     return topic
 
 

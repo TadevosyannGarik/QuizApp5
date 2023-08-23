@@ -1,7 +1,7 @@
-from django import forms
 from django.forms import inlineformset_factory
 from .models import Discipline, Topic, Question, IncorrectAnswer, User, Faculty
 from .models import User, Student
+from django import forms
 
 
 class DisciplineForm(forms.ModelForm):
@@ -78,3 +78,6 @@ class RegistrationForm(forms.Form):
         )
 
         return user
+
+
+
