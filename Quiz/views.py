@@ -120,7 +120,7 @@ def after_login(request):
 
     for discipline in all_disciplines:
         permission_codename = f'view_{discipline.name.replace(" ", "_").lower()}'
-        user_has_permission = request.user.has_perm(f'Quiz.{permission_codename}')
+        user_has_permission = request.user.has_perm(f'QuizApp.{permission_codename}')
 
         if user_has_permission:
             user_allowed_disciplines.append(discipline)
@@ -130,45 +130,32 @@ def after_login(request):
 
     for topic in topics:
         permission_codename = f'view_topic_{topic.id}'
-        if request.user.has_perm(f'Quiz.{permission_codename}'):
+        if request.user.has_perm(f'QuizApp.{permission_codename}'):
             user_allowed_topic_ids.append(topic.id)
 
     user_allowed_topics = topics.filter(id__in=user_allowed_topic_ids)
 
     user_results = QuizResult.objects.filter(user=request.user)
 
-    presets = Preset.objects.all()
-    presets_data = []
-
-    for preset in presets:
-        questions_in_preset = PresetQuestion.objects.filter(preset=preset)
-        total_questions = questions_in_preset.count()
-        total_score = sum(question.question.points for question in questions_in_preset)
-
-        presets_data.append({
-            'id': preset.id,
-            'name': preset.name,
-            'total_questions': total_questions,
-            'total_score': total_score,
-        })
-
-    user = request.user
-    if hasattr(user, 'student'):
-        user_faculty = user.student.faculty
-        faculty_presets = Preset.objects.filter(faculty=user_faculty)
+    if is_student:
+        user_faculty = request.user.student.faculty
+        completed_presets = QuizResult.objects.filter(user=request.user).values('preset')
+        current_presets = Preset.objects.filter(faculty=user_faculty).exclude(id__in=completed_presets)
     else:
-        faculty_presets = Preset.objects.none()
+        current_presets = Preset.objects.all()
+        completed_presets = []
+
+    print("Current Presets:", current_presets)
+    print("Completed Presets:", completed_presets)
 
     faculties = Faculty.objects.all()
 
-    return render(request, 'Quiz/after_login.html', {
-        'is_teacher': is_teacher, 'is_student': is_student,
-        'student_name': student_name,
-        'disciplines': user_allowed_disciplines, 'topics': user_allowed_topics,
-        'user_results': user_results, 'faculties': faculties,
-        'presets_data': presets_data,
-        'faculty_presets': faculty_presets,
-    })
+    return render(request, 'Quiz/after_login.html',
+                  {'is_teacher': is_teacher, 'is_student': is_student,
+                   'student_name': student_name,
+                   'disciplines': user_allowed_disciplines, 'topics': user_allowed_topics,
+                   'user_results': user_results, 'faculties': faculties,
+                   'current_presets': current_presets, 'completed_presets': completed_presets})
 
 
 def index(request):
@@ -190,7 +177,7 @@ def add_discipline(request):
             print(permission_codename)
             permission_name = f'Can view {discipline.name}'
             print(permission_name)
-            content_type = ContentType.objects.get(app_label='Quiz', model='discipline')
+            content_type = ContentType.objects.get(app_label='QuizApp', model='discipline')
             print(content_type)
             permission, created = Permission.objects.get_or_create(
                 codename=permission_codename,
@@ -201,7 +188,7 @@ def add_discipline(request):
             request.user.user_permissions.add(permission)
             print(f"Разрешение добавлено пользователю: {request.user.email}, Разрешение: {permission_codename}")
 
-            return redirect('after_login')
+            return redirect('discipline_list')
     else:
         messages.error(request, "У вас не достаточно прав для добавления дисциплины")
     return render(request, 'Quiz/add_discipline.html')
@@ -222,7 +209,7 @@ def add_topic(request):
 
             permission_codename = f'view_{topic_name.replace(" ", "_").lower()}'
             permission_name = f'Can view {topic_name}'
-            content_type = ContentType.objects.get(app_label='Quiz', model='topic')
+            content_type = ContentType.objects.get(app_label='QuizApp', model='topic')
             permission, created = Permission.objects.get_or_create(
                 codename=permission_codename,
                 name=permission_name,
@@ -232,7 +219,7 @@ def add_topic(request):
             request.user.user_permissions.add(permission)
             print(f"Разрешение добавлено пользователю: {request.user.email}, Разрешение {permission_codename}")
 
-            return redirect('after_login')
+            return redirect('topic_list')
 
     return render(request, 'Quiz/add_topic.html', {'disciplines': disciplines})
 
@@ -250,7 +237,7 @@ def discipline_list(request):
 
     for discipline in all_disciplines:
         permission_codename = f'view_{discipline.name.replace(" ", "_").lower()}'
-        user_has_permission = request.user.has_perm(f'Quiz.{permission_codename}')
+        user_has_permission = request.user.has_perm(f'QuizApp.{permission_codename}')
         print(f"Дисциплина: {discipline.name}, User: {request.user.email}, Имеет разрешение: {user_has_permission}")
 
         if user_has_permission:
@@ -357,17 +344,18 @@ def result(request):
 
 def generate_test(request):
     faculties = Faculty.objects.all()
-    user_allowed_topics = []
+    user_allowed_topic_ids = []
+    topics = Topic.objects.all()
 
-    all_topics = Topic.objects.all()
-
-    for topic in all_topics:
+    for topic in topics:
         permission_codename = f'view_topic_{topic.id}'
-        user_has_permission = request.user.has_perm(f'Quiz.{permission_codename}')
-        if user_has_permission:
-            user_allowed_topics.append(topic)
+        if request.user.has_perm(f'QuizApp.{permission_codename}'):
+            user_allowed_topic_ids.append(topic.id)
+
+    user_allowed_topics = topics.filter(id__in=user_allowed_topic_ids)
 
     if request.method == 'POST':
+
         selected_faculty_id = request.POST.get('faculty')
         selected_faculty = Faculty.objects.get(pk=selected_faculty_id)
 
@@ -375,6 +363,7 @@ def generate_test(request):
         description = request.POST.get('preset_description')
         selected_topic_id = request.POST.get('topic')
         num_questions = int(request.POST.get('num_questions'))
+        answer_mode = request.POST.get('answer_mode')
 
         selected_topic = Topic.objects.get(pk=selected_topic_id)
 
@@ -392,18 +381,19 @@ def generate_test(request):
             preset_question = PresetQuestion(preset=preset, question=question)
             preset_question.save()
 
-            num_incorrect_answers_to_select = min(3, len(all_incorrect_answers))
-            selected_incorrect_answers = random.sample(all_incorrect_answers, num_incorrect_answers_to_select)
-
-            selected_incorrect_answers_dict[question.id] = selected_incorrect_answers
-            print(selected_incorrect_answers)
-            for incorrect_answer in selected_incorrect_answers:
-                preset_question.incorrect_answers.add(incorrect_answer)
+            if answer_mode == 'choose':
+                num_incorrect_answers_to_select = min(3, len(all_incorrect_answers))
+                selected_incorrect_answers = random.sample(all_incorrect_answers, num_incorrect_answers_to_select)
+                selected_incorrect_answers_dict[question.id] = selected_incorrect_answers
+                for incorrect_answer in selected_incorrect_answers:
+                    preset_question.incorrect_answers.add(incorrect_answer)
+                    print(selected_incorrect_answers_dict)
 
         return redirect('preset_list')
 
-    context = {'faculties': faculties, 'user_allowed_topics': user_allowed_topics}
-    return render(request, 'Quiz/generate_test.html', context)
+    context = {'faculties': faculties, 'user_allowed_topics': user_allowed_topics, 'topics': user_allowed_topics,}
+    return render(request, 'Quiz/generate_test.html', context, )
+
 
 
 def preset_list(request):
@@ -503,4 +493,3 @@ def edit_preset(request, preset_id):
         'all_questions': all_questions,
         'all_incorrect_answers': all_incorrect_answers,
     })
-
