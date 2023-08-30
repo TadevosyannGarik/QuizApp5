@@ -19,7 +19,7 @@ class IncorrectAnswerAdmin(admin.ModelAdmin):
 
 
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ['question_text', 'topic', 'correct_answer']
+    list_display = ['question_text', 'topic', 'correct_answer', 'answer_mode']
     list_filter = ['topic']
     search_fields = ['question_text']
 

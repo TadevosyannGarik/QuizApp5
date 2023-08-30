@@ -51,41 +51,41 @@
             list-style: none;
             padding-left: 0;
         }
-
-
-
-
     </style>
 </head>
 <body>
-    <form method="post">
-        {% csrf_token %}
-        <div id="questionContainer">
-            <h2> {{ preset.name }}</h2>
-            {% for question_id, question_data in question_dict.items %}
-                <div class="question {% if forloop.first %}active{% endif %}">
-                    <h5>Вопрос:</h5>
-                    <p>{{ question_data.0 }}</p>
+<form method="post">
+    {% csrf_token %}
+    <div id="questionContainer">
+        <h2>{{ preset.name }}</h2>
+   {% for question_id, question_data in question_dict.items %}
+    <div class="question {% if forloop.first %}active{% endif %}">
+        <h5>Вопрос:</h5>
+        <p>{{ question_data.0 }}</p>
 
-                    <h6>Варианты ответа:</h6>
-                    <ul>
-                        {% for ans_id, points, _ in question_data.1 %}
-                            <li>
-                                <input type="radio" name="question_{{ question_id }}" value="{{ ans_id }}">
-                                {{ ans_id }}
-                            </li>
-                        {% endfor %}
-                    </ul>
+        {% if question_data.2 == 'input' %}
+            <input type="text" name="question_{{ question_id }}" placeholder="Введите ваш ответ">
+        {% elif question_data.2 == 'choose' %}
+            <h6>Варианты ответа:</h6>
+            <ul>
+                {% for ans_id, points, _ in question_data.1 %}
+                    <li>
+                        <input type="radio" name="question_{{ question_id }}" value="{{ ans_id }}">
+                        {{ ans_id }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
 
-                    {% if forloop.last %}
-                        <button type="submit" class="btn btn-outline-success" style="border-radius:10px; height:40px; text-align:center;">Отправить</button>
-                    {% else %}
-                        <button type="button" class="btn btn-outline-dark next-btn" style="border-radius:10px; height:40px; text-align:center;">Следующий вопрос <i class="fa-solid fa-chevron-right"></i></button>
-                    {% endif %}
-                </div>
-            {% endfor %}
-        </div>
-    </form>
+                {% if forloop.last %}
+                    <button type="submit" class="btn btn-outline-success" style="border-radius:10px; height:40px; text-align:center;">Отправить</button>
+                {% else %}
+                    <button type="button" class="btn btn-outline-dark next-btn" style="border-radius:10px; height:40px; text-align:center;">Следующий вопрос <i class="fa-solid fa-chevron-right"></i></button>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</form>
 
     <script>
         const questions = document.querySelectorAll('.question');

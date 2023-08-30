@@ -1,105 +1,68 @@
-<!--<h2>Добавить вопрос</h2>-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить вопрос</title>
+</head>
+<body>
+    <h2>Добавить вопрос</h2>
 
-<!--<form method="post" action="{% url 'add_question' %}">-->
-<!--  {% csrf_token %}-->
+    <form method="post" action="{% url 'add_question' %}">
+        {% csrf_token %}
 
-<!--  <label for="topic">Тема:</label>-->
-<!--  <select name="topic" id="topic" required>-->
-<!--    <option value="" disabled selected>Выберите тему</option>-->
-<!--    {% for topic in topics %}-->
-<!--      <option value="{{ topic.id }}">{{ topic.name }}</option>-->
-<!--    {% endfor %}-->
-<!--  </select>-->
+        <label for="topic">Тема:</label>
+        <select name="topic" id="topic" required>
+            <option value="" disabled selected>Выберите тему</option>
+            {% for topic in topics %}
+                <option value="{{ topic.id }}">{{ topic.name }}</option>
+            {% endfor %}
+        </select>
 
-<!--  <label for="question_count">Количество вопросов:</label>-->
-<!--  <input type="number" id="question_count" name="question_count" min="1" required>-->
+        <label for="question_count">Количество вопросов:</label>
+        <input type="number" id="question_count" name="question_count" min="1" required>
 
-<!--  <div id="question_fields">-->
-<!--    &lt;!&ndash; Здесь будут добавляться поля для вопросов &ndash;&gt;-->
-<!--  </div>-->
+        <div id="question_fields">
+        </div>
 
-<!--  <input type="submit" value="Добавить">-->
-<!--</form>-->
+        <input type="submit" value="Добавить">
+    </form>
 
-<!--<script>-->
-<!--  document.getElementById('question_count').addEventListener('input', function() {-->
-<!--    var questionCount = parseInt(this.value);-->
-<!--    var questionFieldsContainer = document.getElementById('question_fields');-->
+    <script>
+        document.getElementById('question_count').addEventListener('input', function() {
+            var questionCount = parseInt(this.value);
+            var questionFieldsContainer = document.getElementById('question_fields');
 
-<!--    while (questionFieldsContainer.firstChild) {-->
-<!--      questionFieldsContainer.removeChild(questionFieldsContainer.firstChild);-->
-<!--    }-->
+            while (questionFieldsContainer.firstChild) {
+                questionFieldsContainer.removeChild(questionFieldsContainer.firstChild);
+            }
 
-<!--    for (var i = 0; i < questionCount; i++) {-->
-<!--      var questionNumber = i + 1;-->
+            for (var i = 0; i < questionCount; i++) {
+                var questionNumber = i + 1;
 
-<!--      var questionField = document.createElement('div');-->
-<!--      questionField.innerHTML = `-->
-<!--        <h3>Вопрос ${questionNumber}:</h3>-->
-<!--        <textarea name="question_text_${questionNumber}" required></textarea>-->
+                var questionField = document.createElement('div');
+                questionField.innerHTML = `
+                    <h3>Вопрос ${questionNumber}:</h3>
+                    <textarea name="question_text_${questionNumber}" required></textarea>
 
-<!--        <h4>Правильный ответ:</h4>-->
-<!--        <input type="text" name="correct_answer_${questionNumber}" required>-->
+                    <h4>Правильный ответ:</h4>
+                    <input type="text" name="correct_answer_${questionNumber}" required>
 
-<!--        <hr>-->
-<!--      `;-->
+                    <h4>Баллы:</h4>
+                    <input type="number" name="question_points_${questionNumber}" required>
 
-<!--      questionFieldsContainer.appendChild(questionField);-->
-<!--    }-->
-<!--  });-->
-<!--</script>-->
+                    <h4>Режим ответа:</h4>
+                    <select name="answer_mode_${questionNumber}" required>
+                        <option value="input">Ввод ответа</option>
+                        <option value="choose">Выбор ответа</option>
+                    </select>
 
+                    <hr>
+                `;
 
-
-<h2>Добавить вопрос</h2>
-
-<form method="post" action="{% url 'add_question' %}">
-  {% csrf_token %}
-
-  <label for="topic">Тема:</label>
-  <select name="topic" id="topic" required>
-    <option value="" disabled selected>Выберите тему</option>
-    {% for topic in topics %}
-      <option value="{{ topic.id }}">{{ topic.name }}</option>
-    {% endfor %}
-  </select>
-
-  <label for="question_count">Количество вопросов:</label>
-  <input type="number" id="question_count" name="question_count" min="1" required>
-
-  <div id="question_fields">
-  </div>
-
-  <input type="submit" value="Добавить">
-</form>
-
-<script>
-  document.getElementById('question_count').addEventListener('input', function() {
-    var questionCount = parseInt(this.value);
-    var questionFieldsContainer = document.getElementById('question_fields');
-
-    while (questionFieldsContainer.firstChild) {
-      questionFieldsContainer.removeChild(questionFieldsContainer.firstChild);
-    }
-
-    for (var i = 0; i < questionCount; i++) {
-      var questionNumber = i + 1;
-
-      var questionField = document.createElement('div');
-      questionField.innerHTML = `
-        <h3>Вопрос ${questionNumber}:</h3>
-        <textarea name="question_text_${questionNumber}" required></textarea>
-
-        <h4>Правильный ответ:</h4>
-        <input type="text" name="correct_answer_${questionNumber}" required>
-
-        <h4>Баллы:</h4>
-        <input type="number" name="question_points_${questionNumber}" required>
-
-        <hr>
-      `;
-
-      questionFieldsContainer.appendChild(questionField);
-    }
-  });
-</script>
+                questionFieldsContainer.appendChild(questionField);
+            }
+        });
+    </script>
+</body>
+</html>

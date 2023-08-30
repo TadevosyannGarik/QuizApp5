@@ -2,37 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Генерация теста</title>
 </head>
 <body>
   <h1>Сгенерировать тест</h1>
-<form method="post">
-  {% csrf_token %}
-  <label for="faculty">Выберите факультет</label>
-  <select name="faculty" required>
-    {% for faculty in faculties %}
-    <option value="{{ faculty.id }}">{{ faculty.name }}</option>
-    {% endfor %}
-  </select><br>
-  <label for="preset_name">Название пресета:</label>
-  <input type="text" name="preset_name" required><br>
-  <label for="preset_description">Описание пресета:</label>
-  <input type="text" name="preset_description" required><br>
-  <label for="topic">Выберите топик:</label>
-  <select name="topic" required>
-    {% for topic in topics %}
-    <option value="{{ topic.id }}">{{ topic.name }}</option>
-    {% endfor %}
-  </select><br>
-  <label for="num_questions">Колличество вопросв:</label>
-  <input type="number" name="num_questions" required><br>
-    <label for="answer_mode">Выберите режим ответа:</label>
-<select name="answer_mode" required>
-    <option value="input">Вводить ответ</option>
-    <option value="choose">Выбирать ответы</option>
-</select><br>
-  <button type="submit">Сгенерировать тест</button>
+  <form method="post">
+    {% csrf_token %}
+    <label for="faculty">Выберите факультет:</label>
+    <select name="faculty" required>
+      {% for faculty in faculties %}
+        <option value="{{ faculty.id }}">{{ faculty.name }}</option>
+      {% endfor %}
+    </select><br>
+    <label for="preset_name">Название пресета:</label>
+    <input type="text" name="preset_name" required><br>
+    <label for="preset_description">Описание пресета:</label>
+    <input type="text" name="preset_description" required><br>
+    <label for="topic">Выберите топик:</label>
+    <select name="topic" required>
+      {% for topic in topics %}
+        <option value="{{ topic.id }}">{{ topic.name }}</option>
+      {% endfor %}
+    </select><br>
+    <label for="num_questions">Количество вопросов:</label>
+    <input type="number" name="num_questions" required><br>
+    <button type="submit">Сгенерировать тест</button>
 </form>
-
 </body>
 </html>

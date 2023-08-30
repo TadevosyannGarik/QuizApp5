@@ -74,7 +74,7 @@ def login_view(request):
                 login(request, user)
                 return redirect('after_login')
         else:
-            return render(request, 'Quiz/login.html',{'error': 'Не Верный Email или пароль'})
+            return render(request, 'Quiz/login.html', {'error': 'Не Верный Email или пароль'})
     else:
         form = AuthenticationForm()
     return render(request, 'Quiz/login.html', {'form': form})
@@ -245,7 +245,6 @@ def discipline_list(request):
 
     return render(request, 'Quiz/discipline_list.html', {'disciplines': user_allowed_disciplines})
 
-
 @login_required
 @user_passes_test(is_teacher)
 def add_incorrect_answer(request):
@@ -263,8 +262,6 @@ def add_incorrect_answer(request):
     return render(request, 'Quiz/add_incorrect_answer.html', {'topics': topics})
 
 
-@login_required
-@user_passes_test(is_teacher)
 def add_question(request):
     topics = Topic.objects.all()
 
@@ -276,9 +273,10 @@ def add_question(request):
             question_text = request.POST.get(f'question_text_{i}')
             correct_answer = request.POST.get(f'correct_answer_{i}')
             question_points = int(request.POST.get(f'question_points_{i}'))
+            answer_mode = request.POST.get(f'answer_mode_{i}')  # Получите режим ответа
 
-            if topic_id and question_text and correct_answer:
-                save_question(topic_id, question_text, correct_answer, question_points)
+            if topic_id and question_text and correct_answer and answer_mode:
+                save_question(topic_id, question_text, correct_answer, question_points, answer_mode)
 
         return redirect('index')
 
@@ -338,10 +336,6 @@ def topic_detail(request, topic_id):
     return render(request, 'Quiz/topic_detail.html',  {'topic': topic, 'questions': all_q, 'list_question': list_question})
 
 
-def result(request):
-    return render(request, 'Quiz/result.html')
-
-
 def generate_test(request):
     faculties = Faculty.objects.all()
     user_allowed_topic_ids = []
@@ -355,19 +349,21 @@ def generate_test(request):
     user_allowed_topics = topics.filter(id__in=user_allowed_topic_ids)
 
     if request.method == 'POST':
-
         selected_faculty_id = request.POST.get('faculty')
         selected_faculty = Faculty.objects.get(pk=selected_faculty_id)
-
         name = request.POST.get('preset_name')
         description = request.POST.get('preset_description')
         selected_topic_id = request.POST.get('topic')
         num_questions = int(request.POST.get('num_questions'))
-        answer_mode = request.POST.get('answer_mode')
 
         selected_topic = Topic.objects.get(pk=selected_topic_id)
 
-        preset = Preset(name=name, description=description, faculty=selected_faculty, topic=selected_topic)
+        preset = Preset(
+            name=name,
+            description=description,
+            faculty=selected_faculty,
+            topic=selected_topic,
+        )
         preset.save()
 
         questions_from_topic = selected_topic.question_set.all()
@@ -375,24 +371,32 @@ def generate_test(request):
         selected_questions = questions_from_topic.order_by('?')[:num_questions]
         all_incorrect_answers = list(IncorrectAnswer.objects.filter(topic=selected_topic))
 
-        selected_incorrect_answers_dict = {}
-
         for question in selected_questions:
+            answer_mode = question.answer_mode  # Получаем режим ответа из вопроса
             preset_question = PresetQuestion(preset=preset, question=question)
             preset_question.save()
 
             if answer_mode == 'choose':
                 num_incorrect_answers_to_select = min(3, len(all_incorrect_answers))
                 selected_incorrect_answers = random.sample(all_incorrect_answers, num_incorrect_answers_to_select)
-                selected_incorrect_answers_dict[question.id] = selected_incorrect_answers
                 for incorrect_answer in selected_incorrect_answers:
                     preset_question.incorrect_answers.add(incorrect_answer)
-                    print(selected_incorrect_answers_dict)
+                preset_question.correct_answer = question.correct_answer
+            else:
+                preset_question.correct_answer = question.correct_answer
+
+            print(f"Вопрос: {question.question_text}")
+            print(f"Верный ответ: {preset_question.correct_answer}")
+            print("Неверные ответы:")
+            for incorrect_answer in preset_question.incorrect_answers.all():
+                print(incorrect_answer.answer_text)
+            print()
 
         return redirect('preset_list')
 
-    context = {'faculties': faculties, 'user_allowed_topics': user_allowed_topics, 'topics': user_allowed_topics,}
-    return render(request, 'Quiz/generate_test.html', context, )
+    context = {'faculties': faculties, 'user_allowed_topics': user_allowed_topics, 'topics': user_allowed_topics}
+    return render(request, 'Quiz/generate_test.html', context)
+
 
 
 
@@ -417,28 +421,40 @@ def preset_detail(request, preset_id):
     preset_questions = PresetQuestion.objects.filter(preset=preset)
     total_points = sum(question.question.points for question in preset_questions)
     question_dict = {}
+
     for preset_question in preset_questions:
         question = preset_question.question
         tmp_list = [question.question_text]
 
-        incorrect_answers = list(preset_question.incorrect_answers.all())
-        answers = [(question.correct_answer, question.points, question.id)]
-        while len(answers) < 4 and len(incorrect_answers) > 0:
-            incorrect_answer = incorrect_answers.pop()
-            answers.append((incorrect_answer.answer_text, 0, incorrect_answer.id))
-        random.shuffle(answers)
-        question_dict[question.id] = tmp_list + [answers]
-    question_ids = list(question_dict.keys())
-    random.shuffle(question_ids)
-    question_dict = {qid: question_dict[qid] for qid in question_ids}
+        answer_mode = question.answer_mode
+        if answer_mode == 'choose':
+            incorrect_answers = list(preset_question.incorrect_answers.all())
+            answers = [(question.correct_answer, question.points, question.id)]
+            while len(answers) < 4 and len(incorrect_answers) > 0:
+                incorrect_answer = incorrect_answers.pop()
+                answers.append((incorrect_answer.answer_text, 0, incorrect_answer.id))
+            random.shuffle(answers)
+        else:
+            answers = []
+
+        question_dict[question.id] = tmp_list + [answers, answer_mode]
+
     if request.method == 'POST':
         score = 0
         for question_id, question_data in question_dict.items():
             selected_answer = request.POST.get("question_" + str(question_id))
-            for ans_id, points, _ in question_data[1]:
-                if ans_id == selected_answer:
-                    score += points
-                    break
+            if question_data[2] == 'choose':
+                for ans_id, points, _ in question_data[1]:
+                    if ans_id == selected_answer:
+                        score += points
+                        break
+
+            elif question_data[2] == 'input':
+                user_input = request.POST.get("question_" + str(question_id))
+                correct_answer = question.correct_answer
+                if user_input.strip().lower() == correct_answer.strip().lower():
+                    score += question.points
+
         user = request.user
         quiz_result = QuizResult.objects.create(
             user=user,
@@ -448,13 +464,27 @@ def preset_detail(request, preset_id):
             date_completed=timezone.now()
         )
         quiz_result.save()
-        return render(request, 'Quiz/result.html', {'score': score, 'total_questions': len(preset_questions)})
-    return render(request, 'Quiz/preset_detail.html', {
+
+        return redirect('result', quiz_result_id=quiz_result.id)
+
+    context = {'preset': preset, 'preset_questions': preset_questions, 'total_points': total_points, 'question_dict': question_dict}
+    return render(request, 'Quiz/preset_detail.html', context)
+
+
+def result(request, quiz_result_id):
+    quiz_result = QuizResult.objects.get(id=quiz_result_id)
+    user = quiz_result.user.student
+    preset = quiz_result.preset
+    questions = Question.objects.filter(topic=preset.topic)
+
+    context = {
+        'quiz_result': quiz_result,
+        'user': user,
         'preset': preset,
-        'preset_questions': preset_questions,
-        'total_points': total_points,
-        'question_dict': question_dict,
-    })
+        'questions': questions,
+    }
+
+    return render(request, 'Quiz/result.html', context)
 
 
 def edit_preset(request, preset_id):
@@ -493,3 +523,4 @@ def edit_preset(request, preset_id):
         'all_questions': all_questions,
         'all_incorrect_answers': all_incorrect_answers,
     })
+

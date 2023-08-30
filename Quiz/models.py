@@ -22,6 +22,11 @@ class Question(models.Model):
     question_text = models.TextField()
     correct_answer = models.CharField(max_length=100, default='')
     points = models.IntegerField(default=0)
+    ANSWER_MODE_CHOICES = [
+        ('input', 'Ввод ответа'),
+        ('choose', 'Выбор ответа'),
+    ]
+    answer_mode = models.CharField(max_length=10, choices=ANSWER_MODE_CHOICES, default='input')
 
     def __str__(self):
         return self.question_text
@@ -107,4 +112,5 @@ class QuizResult(models.Model):
     def save(self, *args, **kwargs):
         self.grade = self.calculate_grade()
         super().save(*args, **kwargs)
+
 
