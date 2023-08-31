@@ -398,8 +398,6 @@ def generate_test(request):
     return render(request, 'Quiz/generate_test.html', context)
 
 
-
-
 def preset_list(request):
     presets = Preset.objects.all()
     return render(request, 'Quiz/preset_list.html', {'presets': presets})
@@ -451,9 +449,11 @@ def preset_detail(request, preset_id):
 
             elif question_data[2] == 'input':
                 user_input = request.POST.get("question_" + str(question_id))
-                correct_answer = question.correct_answer
-                if user_input.strip().lower() == correct_answer.strip().lower():
-                    score += question.points
+                question = Question.objects.filter(question_text=question_data[0]).first()
+                if (question):
+                    correct_answer = question.correct_answer
+                    if user_input.strip().lower() == correct_answer.strip().lower():
+                        score += question.points
 
         user = request.user
         quiz_result = QuizResult.objects.create(
