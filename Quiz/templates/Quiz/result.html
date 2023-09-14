@@ -1,70 +1,55 @@
 <!doctype html>
 <html lang="en">
+{% load static %}
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <title>Document</title>
-    <style>
-         body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background:color: #eee;
-        }
-
-        .container {
-            display: flex;
-            padding: 0px;
-            width: 1300px;
-            height: 700px;
-            border-radius: 10px;
-        }
-
-        .left-side {
-            flex: 1;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .right-side {
-            flex: 1;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: -60px
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-
-        label {
-            margin-bottom: 5px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <title>Результаты теста</title>
+  <link rel="stylesheet" href="{% static '/QuizApp/Result.css' %}">
 </head>
 <body>
-<div class="container">
-    <div class="left-side">
-        <p>Вы набрали: {{ quiz_result.score }} из {{ quiz_result.total_points }}</p>
+  <div class="container">
+    <div class="info">
+      <h1>Результаты теста - {{ preset.name }}</h1>
+      <p>Студент: {{ user.first_name }} {{ user.last_name }}</p>
+      <p>Вы набрали: <span style="color: #ff725e; font-weight: bold;">{{ quiz_result.score }}</span> из
+        {{ quiz_result.total_points }}</p>
+      <p>Ваша оценка: {{ quiz_result.grade }}</p>
     </div>
-    <div class="right-side">
-        <p>Ваша оценка: {{ grade }}</p>
-    </div>
-</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="border-radius: 10px 0px 0px 0px;">Вопрос</th>
+          <th>Ваш ответ</th>
+          <th>Верный ответ</th>
+          <th style="border-radius: 0px 10px 0px 0px;">Балл</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for question_result in question_results %}
+        <tr>
+          <td>{{ question_result.question.question_text }}</td>
+          <td>{{ question_result.student_answer }}</td>
+          <td>{{ question_result.question.correct_answer }}</td>
+          <td>
+            {{ question_result.question.points }}
+            {% if question_result.student_answer == question_result.question.correct_answer %}
+            <span style="color: green;"><i class="fa-solid fa-check"></i></span>
+            {% else %}
+            <span style="color: red;"><i class="fa-solid fa-xmark"></i></span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </body>
 </html>

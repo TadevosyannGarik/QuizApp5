@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Discipline, Topic, Question, IncorrectAnswer, Student, User, QuizResult, Preset, PresetQuestion, \
-    Faculty
+    Faculty, PresetQuestionResult
 from .utils import save_discipline, save_topic, save_question
 from .forms import RegistrationForm
 from django.contrib.auth import authenticate, login
@@ -87,6 +87,11 @@ def success(request):
 def students_passed_test(request, preset_id):
     preset = Preset.objects.get(id=preset_id)
     student_results = QuizResult.objects.filter(preset=preset)
+    quiz_result_id = 1
+    quiz_result_id = 1
+    context = {
+        'quiz_result_id': quiz_result_id,
+    }
     passed_users = [
         {
             "user": result.user,
@@ -120,7 +125,7 @@ def after_login(request):
 
     for discipline in all_disciplines:
         permission_codename = f'view_{discipline.name.replace(" ", "_").lower()}'
-        user_has_permission = request.user.has_perm(f'QuizApp.{permission_codename}')
+        user_has_permission = request.user.has_perm(f'Quiz.{permission_codename}')
 
         if user_has_permission:
             user_allowed_disciplines.append(discipline)
@@ -130,7 +135,7 @@ def after_login(request):
 
     for topic in topics:
         permission_codename = f'view_topic_{topic.id}'
-        if request.user.has_perm(f'QuizApp.{permission_codename}'):
+        if request.user.has_perm(f'Quiz.{permission_codename}'):
             user_allowed_topic_ids.append(topic.id)
 
     user_allowed_topics = topics.filter(id__in=user_allowed_topic_ids)
@@ -177,7 +182,7 @@ def add_discipline(request):
             print(permission_codename)
             permission_name = f'Can view {discipline.name}'
             print(permission_name)
-            content_type = ContentType.objects.get(app_label='QuizApp', model='discipline')
+            content_type = ContentType.objects.get(app_label='Quiz', model='discipline')
             print(content_type)
             permission, created = Permission.objects.get_or_create(
                 codename=permission_codename,
@@ -209,7 +214,7 @@ def add_topic(request):
 
             permission_codename = f'view_{topic_name.replace(" ", "_").lower()}'
             permission_name = f'Can view {topic_name}'
-            content_type = ContentType.objects.get(app_label='QuizApp', model='topic')
+            content_type = ContentType.objects.get(app_label='Quiz', model='topic')
             permission, created = Permission.objects.get_or_create(
                 codename=permission_codename,
                 name=permission_name,
@@ -372,7 +377,7 @@ def generate_test(request):
         all_incorrect_answers = list(IncorrectAnswer.objects.filter(topic=selected_topic))
 
         for question in selected_questions:
-            answer_mode = question.answer_mode  # Получаем режим ответа из вопроса
+            answer_mode = question.answer_mode
             preset_question = PresetQuestion(preset=preset, question=question)
             preset_question.save()
 
@@ -438,31 +443,46 @@ def preset_detail(request, preset_id):
         question_dict[question.id] = tmp_list + [answers, answer_mode]
 
     if request.method == 'POST':
+        quiz_result = QuizResult(user=request.user, preset=preset, total_points=total_points,
+                                 date_completed=timezone.now())
+        quiz_result.save()
         score = 0
         for question_id, question_data in question_dict.items():
             selected_answer = request.POST.get("question_" + str(question_id))
+            question = Question.objects.get(id=question_id)
+
             if question_data[2] == 'choose':
+                selected_answer_text = None
                 for ans_id, points, _ in question_data[1]:
                     if ans_id == selected_answer:
+                        selected_answer_text = ans_id
                         score += points
                         break
 
+                preset_question_result = PresetQuestionResult(
+                    quiz_result=quiz_result,
+                    student=request.user.student,
+                    question=question,
+                    student_answer=selected_answer_text,
+                    question_score=score
+                )
+                preset_question_result.save()
             elif question_data[2] == 'input':
                 user_input = request.POST.get("question_" + str(question_id))
-                question = Question.objects.filter(question_text=question_data[0]).first()
-                if (question):
-                    correct_answer = question.correct_answer
-                    if user_input.strip().lower() == correct_answer.strip().lower():
-                        score += question.points
+                correct_answer = question.correct_answer
+                if user_input.strip().lower() == correct_answer.strip().lower():
+                    score += question.points
 
-        user = request.user
-        quiz_result = QuizResult.objects.create(
-            user=user,
-            preset=preset,
-            score=score,
-            total_points=total_points,
-            date_completed=timezone.now()
-        )
+                preset_question_result = PresetQuestionResult(
+                    quiz_result=quiz_result,
+                    student=request.user.student,
+                    question=question,
+                    student_answer=user_input,
+                    question_score=question.points if user_input.strip().lower() == correct_answer.strip().lower() else 0
+                )
+                preset_question_result.save()
+
+        quiz_result.score = score
         quiz_result.save()
 
         return redirect('result', quiz_result_id=quiz_result.id)
@@ -477,11 +497,14 @@ def result(request, quiz_result_id):
     preset = quiz_result.preset
     questions = Question.objects.filter(topic=preset.topic)
 
+    question_results = PresetQuestionResult.objects.filter(quiz_result=quiz_result)
+
     context = {
         'quiz_result': quiz_result,
         'user': user,
         'preset': preset,
         'questions': questions,
+        'question_results': question_results,
     }
 
     return render(request, 'Quiz/result.html', context)
@@ -523,4 +546,3 @@ def edit_preset(request, preset_id):
         'all_questions': all_questions,
         'all_incorrect_answers': all_incorrect_answers,
     })
-

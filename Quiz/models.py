@@ -91,13 +91,21 @@ class QuizResult(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     preset = models.ForeignKey(Preset, on_delete=models.CASCADE)
     score = models.IntegerField(default=0)
-    total_points = models.IntegerField(default=0)
     grade = models.IntegerField(default=0)
-
-    date_completed = models.DateTimeField()
+    total_points = models.IntegerField(default=0)
+    date_started = models.DateTimeField(auto_now_add=True)
+    date_completed = models.DateTimeField(null=True)
 
     def __str__(self):
         return f"{self.user.username} - {self.preset.name} - Score: {self.score}"
+
+    def get_duration(self):
+        if self.date_completed is not None:
+            duration = self.date_completed - self.date_started
+            minutes, seconds = divmod(duration.total_seconds(), 60)
+            return f"{int(minutes)} минут {int(seconds)} секунд"
+        else:
+            return "Тест не завершен"
 
     def calculate_grade(self):
         if self.score >= 80:
@@ -114,3 +122,12 @@ class QuizResult(models.Model):
         super().save(*args, **kwargs)
 
 
+class PresetQuestionResult(models.Model):
+    quiz_result = models.ForeignKey(QuizResult, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    student_answer = models.CharField(max_length=100)
+    question_score = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"Quiz Result: {self.quiz_result} - Question: {self.question.question_text} - Score: {self.question_score}"
