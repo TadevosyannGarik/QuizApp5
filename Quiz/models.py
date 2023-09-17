@@ -27,10 +27,10 @@ class Question(models.Model):
         ('choose', 'Выбор ответа'),
     ]
     answer_mode = models.CharField(max_length=10, choices=ANSWER_MODE_CHOICES, default='input')
+    image = models.ImageField(upload_to='question_images/', blank=True, null=True)
 
     def __str__(self):
         return self.question_text
-
 
 class IncorrectAnswer(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)

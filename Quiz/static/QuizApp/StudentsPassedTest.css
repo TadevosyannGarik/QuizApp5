@@ -14,7 +14,7 @@
      font-weight: 300;
      line-height: 1em;
      text-align: center;
-     color: #4DC3FA;
+     color: #ff725e;
  }
 
  h2 {
@@ -87,7 +87,7 @@
  }
 
  .container td:first-child {
-     color: #FB667A;
+     color: #ff725e;
      height: 0px;
  }
 

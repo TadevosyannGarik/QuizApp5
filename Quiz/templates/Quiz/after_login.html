@@ -1,366 +1,372 @@
 <!DOCTYPE html>
 <html lang="en">
 {% load static %}
+
 <head>
-	<meta charset="UTF-8">
-	<title>Главная страница</title>
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-	<link rel="stylesheet" href="{% static '/QuizApp/AfterLogin.css' %}">
+  <meta charset="UTF-8">
+  <title>Главная страница</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="{% static '/QuizApp/AfterLogin.css' %}">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
+
 <body>
-	<div class="sidebar">
-		<div class="user-info">
-			{% if is_teacher %}
-			<img src="{% static 'images/teacher.png' %}" width="100" height="100">
-			<p style="font-size: 20px; color: #ffffffe0">{{ request.user.last_name }} {{ request.user.first_name }}</p>
-			<p style="font-size: 15px; color: #ffffffe0">| Преподаватель |</p>
-			{% elif request.user.student %}
-			<img src="{% static 'images/student.png' %}" width="100" height="100">
-			<p style="font-size: 20px; color: #ffffffe0">{{ student_name }}</p>
-			<p style="font-size: 15px; color: #ffffffe0">| Студент |</p>
-			<div style="position: absolute; bottom: 0; left: 0; width: 100%; text-align: center; font-size: 18px; color: #ffffffe0; border-top: 1px solid #ffffffe0;
+  <div class="sidebar">
+    <div class="user-info">
+      {% if is_teacher %}
+      <img src="{% static 'images/teacher.png' %}" width="100" height="100">
+      <p style="font-size: 20px; color: #ffffffe0">{{ request.user.last_name }} {{ request.user.first_name }}</p>
+      <p style="font-size: 15px; color: #ffffffe0">| Преподаватель |</p>
+      {% elif request.user.student %}
+      <img src="{% static 'images/student.png' %}" width="100" height="100">
+      <p style="font-size: 20px; color: #ffffffe0">{{ student_name }}</p>
+      <p style="font-size: 15px; color: #ffffffe0">| Студент |</p>
+      <div style="position: absolute; bottom: 0; left: 0; width: 100%; text-align: center; font-size: 18px; color: #ffffffe0; border-top: 1px solid #ffffffe0;
     padding: 15px 0px 2px;">
-				{% if request.user.student %}
-				<p>Курс: {{ request.user.student.course }}</p>
-				<p>Факультет: {{ request.user.student.faculty }}</p>
-				{% endif %}
-			</div>
-			{% endif %}
-		</div>
-		<br>
-		<br>
-		<br>
-		{% if is_student %}
-		<a href="javascript:void(0);" onclick="togglePresetsForm()">Список тестов</a>
-		<a href="javascript:void(0);" class="show" onclick="showScoreTable()">
-			<i class="fas fa-chart-bar"></i> Мои результаты
-		</a>
-		{% endif %}
-
-		{% if is_teacher %}
-		<a href="javascript:void(0);" onclick="toggleDisciplineOptions()" class="show">
-			<i class="fas fa-book"></i> Дисциплины
-		</a>
-		<a href="javascript:void(0);" onclick="toggleTopicCards()" class="show">
-			<i class="fas fa-list-ul"></i> Подразделы
-		</a>
-		<div id="topic-submenu" class="collapse">
-			<a class="show" href="{% url 'add_question' %}">
-				<i class="fa-regular fa-square-plus"></i> Добавить вопросы
-			</a>
-			<a class="show" href="{% url 'add_incorrect_answer' %}">
-				<i class="fa-solid fa-align-center"></i> Неверные ответы
-			</a>
-		</div>
-		<a class="show" href="javascript:void(0);" onclick="toggleExamCards()">
-			<i class="fas fa-file-alt"></i> Создать тест
-		</a>
-		{% endif %}
-	</div>
-	</div>
-	<div class="container animate"
-		style="display: flex; align-items: center; justify-content: space-between; width: 82%; max-width: 1610px;">
-		<a href="" class="button" style="order: 2;">Выйти
-			<i class="fa-solid fa-arrow-right-from-bracket"></i>
-		</a>
-		<h2 style="order: 1;">Страница преподавателя</h2>
-	</div>
-	<div class="container" style="display: none; margin-left: 300px;" id="discipline-cards">
-		<div class="row" style="width: 1100px; margin-left: 250px; background-color: none;">
-			<div class="col-md-4 col-xl-6">
-				<div class="card bg-c-blue order-card">
-					<div class="card-block">
-						<h6 class="m-b-20">
-							<a class="show" href="javascript:void(0);"
-								style="text-decoration: none;color:white; font-size: 18px;"
-								onclick="toggleAddDisciplineForm()">Добавить дисциплину</a>
-						</h6>
-						<h2 class="text-right"><i class="fa-solid fa-plus f-left"></i></h2>
-<br>
-						<div style="display: none; margin-left: 300px;" id="add-discipline-form">
-							<form method="post" action="{% url 'add_discipline' %}">
-								{% csrf_token %}
-								<br>
-								<input
-									style="border-radius: 10px; border: 0.1px solid #343a40; height:45px; width: 470px; margin-left: -300px; font-size: 16px;"
-									type="text" id="name" name="name" placeholder="Введите название" required>
-								<br><br>
-								<input class="show add-discipline-link"
-									style=" margin-left: -300px; background-color: #EF6262; border: none; font-size: 18px;"
-									type="submit" class="show" value="Добавить">
-							</form>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="col-md-4 col-xl-6">
-				<div class="card bg-c-green order-card">
-					<div class="card-block">
-						<h6 class="m-b-20"><a href="javascript:void(0);"
-								style="text-decoration: none;color:white;  font-size: 18px;"
-								onclick="toggleDisciplineList()">Список
-								дисциплин</a></h6>
-						<h2 class="text-right"><i class="fa-solid fa-list f-left"></i></h2>
-						<div class="container" style="display: none; margin-left: -20px; width: 500px;"
-							id="discipline-list">
-							<div class="d-flex justify-content-center align-items-center">
-								<table class="table table-bordered rounded">
-									<thead>
-										<tr style="border-radius: 35px">
-											<th style="border-bottom-width: 0px; font-size: 18px;">Название дисциплины
-											</th>
-										</tr>
-									</thead>
-									<tbody>
-										{% for discipline in disciplines %}
-										<tr>
-											<td style="font-size: 17px;">{{ discipline.name }}</td>
-										</tr>
-										{% endfor %}
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="container" style="display: none; margin-left: 300px;" id="topic-cards">
-		<div class="container">
-			<div class="row" style="width: 1100px; margin-left: -70px; margin-top: -20px;">
-				<div class="col-md-4 col-xl-6">
-					<div class="card bg-c-blue order-card" style="background-color: #04868f;">
-						<div class="card-block">
-							<h6 class="m-b-20">
-								<a href="javascript:void(0);"
-									style="text-decoration: none;color:white; font-size: 18px;"
-									onclick="toggleTopicForm()">Добавить тему</a>
-							</h6>
-							<h2 class="text-right"><i class="fas fa-plus f-left"></i></h2>
-							<div id="topic-form" style="display: none;">
-								<form method="post" action="{% url 'add_topic' %}">
-									{% csrf_token %}
-									<label
-										style="margin-top: 20px; margin-left: -23px; margin-bottom: 0px; font-size: 16px;"
-										for="discipline">Дисциплина:</label>
-									<select id="discipline" name="discipline" required>
-										{% for discipline in disciplines %}
-										<option value="{{ discipline.id }}">{{ discipline.name }}</option>
-										{% endfor %}
-									</select>
-									<br><br>
-									<input
-										style="border-radius: 10px; border: 1px solid #343a40; height:40px; width: 200px;"
-										type="text" id="name" name="name" required>
-									<br><br>
-									<input class="show add-discipline-link"
-										style="  background-color: #04868f; border: none; font-size: 18px;"
-										type="submit" class="show" value="Добавить">
-								</form>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="col-md-4 col-xl-6">
-					<div class="card bg-c-green order-card" style="background-color: #4C4C6D;">
-						<div class="card-block">
-							<h6 class="m-b-20">
-								<a href="javascript:void(0);"
-									style="text-decoration: none;color:white; font-size: 18px;"
-									onclick="toggleTopicList()">Список тем</a>
-							</h6>
-							<h2 class="text-right"><i class="fas fa-eye f-left"></i></h2>
-							<div class="container" style="display: none; margin-left: -20px; width: 500px;"
-								id="topic-list">
-								<table class="table table-bordered rounded">
-									<thead>
-										<tr>
-											<th style="border-bottom-width: 0px; font-size: 18px; ">Название темы</th>
-											<th style="border-bottom-width: 0px; font-size: 18px;">Дисциплина</th>
-										</tr>
-									</thead>
-									<tbody>
-										{% for topic in topics %}
-										<tr>
-											<td style="font-size: 17px;">{{ topic.name }}</td>
-											<td style="font-size: 17px;">{{ topic.discipline.name }}</td>
-										</tr>
-										{% empty %}
-										<tr>
-											<td colspan="2">Нет доступных тем</td>
-										</tr>
-										{% endfor %}
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="container" id="exam-cards" style="display: none; margin-left: 300px;">
-		<div class="row" style="width: 1100px; margin-left: 250px; margin-top: 0px;">
-			<div class="col-md-4 col-xl-6">
-				<div class="card bg-c-blue order-card" style="background-color: #6096ba">
-					<div class="card-block">
-						<h6 class="m-b-20">
-							<a href="javascript:void(0);" onclick="toggleExamForm()"
-								style="text-decoration: none;color:white; font-size: 18px;">
-								Сгенерировать тест
-							</a>
-						</h6>
-						<h2 class="text-right"><i class="fas fa-plus f-left"></i></h2>
-						<form method="post" id="exam-form" style="display: none;" action="{% url 'generate_test' %}">
-							{% csrf_token %}
-							<label style="margin-top: 65px;" for="topic">Выберите топик:</label>
-							<select name="topic" required>
-								{% for topic in topics %}
-								<option value="{{ topic.id }}">{{ topic.name }}</option>
-								{% endfor %}
-							</select>
-							<label for="faculty">Выберите факультет</label>
-							<select name="faculty" required>
-								{% for faculty in faculties %}
-								<option value="{{ faculty.id }}">{{ faculty.name }}</option>
-								{% endfor %}
-							</select><br>
-							<label for="preset_name">Название пресета:</label>
-							<input style="    width: 100%; height: 40px; border-radius: 10px; border: none;" type="text" name="preset_name" required><br>
-							<label for="preset_description">Описание пресета:</label>
-							<input style="    width: 100%; height: 40px; border-radius: 10px;border: none;" type="text" name="preset_description" required><br>
-							<label for="num_questions">Количество вопросов:</label>
-							<input type="number" name="num_questions" required><br>
-							{% for i in num_questions_range %}
-							<div>
-								<label for="incorrect_answers{{ i }}">Выберите неверные ответы для вопроса
-									{{ i|add:1 }}</label>
-								<select name="incorrect_answers{{ i }}[]" multiple required>
-									<option value="" disabled selected>Выберите неверные ответы</option>
-									{% for incorrect_answer in all_incorrect_answers %}
-									<option value="{{ incorrect_answer.id }}">{{ incorrect_answer.answer_text }}
-									</option>
-									{% endfor %}
-								</select><br>
-							</div>
-							{% endfor %}
-							<input class="show add-discipline-link"
-								style="  background-color: #6096ba; border: none; font-size: 18px;" type="submit"
-								class="show" value="Добавить">
-						</form>
-					</div>
-				</div>
-			</div>
-			<div class="col-md-4 col-xl-6">
-				<div class="card bg-c-green order-card" style="background-color: #415a77;">
-					<div class="card-block">
-						<h6 class="m-b-20"><a href="#" id="test-list-link"
-								style="text-decoration: none;color:white; font-size: 18px;">Список тестов</a></h6>
-						<h2 class="text-right"><i class="fas fa-eye f-left"></i></h2>
-					<div id="test-list-table" style="display: none;">
+        {% if request.user.student %}
+        <p>Курс: {{ request.user.student.course }}</p>
+        <p>Факультет: {{ request.user.student.faculty }}</p>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
     <br>
-    <table class="table table-bordered" id="preset-table">
-        <thead>
-            <tr>
-                <th style="border-bottom-width: 1px; font-size: 18px;">Название</th>
-                <th style="border-bottom-width: 1px; font-size: 18px;">Вопросов</th>
-                <th style="border-bottom-width: 1px; font-size: 18px;">Баллов</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for preset in current_presets %}
-            <tr>
-                <td style="font-size: 17px;">
-                    <a href="{% url 'students_passed_test' preset.id %}" style="color: white;">{{ preset.name }}</a>
-                </td>
-                <td style="font-size: 17px;">{{ preset.total_questions }}</td>
-                <td style="font-size: 17px;">{{ preset.total_score }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="3">Нет доступных тестов</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div id="score-table" style="display: none; text-align: center;">
-    <h4>Ваши баллы за тесты</h4>
+    <br>
+    <br>
+    {% if is_student %}
+    <a href="javascript:void(0);" onclick="togglePresetsForm()"><i class="fa-solid fa-list"></i>
+      Списки тестов</a>
+    <a href="javascript:void(0);" class="show" onclick="showScoreTable()">
+      <i class="fas fa-chart-bar"></i> Мои результаты
+    </a>
+    {% endif %}
+
+    {% if is_teacher %}
+    <a href="javascript:void(0);" onclick="toggleDisciplineOptions()" class="show">
+      <i class="fas fa-book"></i> Дисциплины
+    </a>
+    <a href="javascript:void(0);" onclick="toggleTopicCards()" class="show">
+      <i class="fas fa-list-ul"></i> Подразделы
+    </a>
+    <div id="topic-submenu" class="collapse">
+      <a class="show" href="{% url 'add_question' %}">
+        <i class="fa-regular fa-square-plus"></i> Добавить вопросы
+      </a>
+      <a class="show" href="{% url 'add_incorrect_answer' %}">
+        <i class="fa-solid fa-align-center"></i> Неверные ответы
+      </a>
+    </div>
+    <a class="show" href="javascript:void(0);" onclick="toggleExamCards()">
+      <i class="fas fa-file-alt"></i> Создать тест
+    </a>
+    {% endif %}
+  </div>
+  </div>
+  <div class="container animate"
+    style="display: flex; align-items: center; justify-content: space-between; width: 82%; max-width: 1610px;">
+    <a href="" class="button" style="order: 2;">Выйти
+      <i class="fa-solid fa-arrow-right-from-bracket"></i>
+    </a>
+    <h2 style="order: 1;">Страница преподавателя</h2>
+  </div>
+  <div class="container" style="display: none; margin-left: 300px;" id="discipline-cards">
+    <div class="row" style="width: 1100px; margin-left: 250px; background-color: none;">
+      <div class="col-md-4 col-xl-6">
+        <div class="card bg-c-blue order-card">
+          <div class="card-block">
+            <h6 class="m-b-20">
+              <a class="show" href="javascript:void(0);" style="text-decoration: none;color:white; font-size: 18px;"
+                onclick="toggleAddDisciplineForm()">Добавить дисциплину</a>
+            </h6>
+            <h2 class="text-right"><i class="fa-solid fa-plus f-left"></i></h2>
+            <br>
+            <div style="display: none; margin-left: 300px;" id="add-discipline-form">
+              <form method="post" action="{% url 'add_discipline' %}">
+                {% csrf_token %}
+                <br>
+                <input
+                  style="border-radius: 10px; border: 0.1px solid #343a40; height:45px; width: 470px; margin-left: -300px; font-size: 16px;"
+                  type="text" id="name" name="name" placeholder="Введите название" required>
+                <br><br>
+                <input class="show add-discipline-link"
+                  style=" margin-left: -300px; background-color: #EF6262; border: none; font-size: 18px;" type="submit"
+                  class="show" value="Добавить">
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 col-xl-6">
+        <div class="card bg-c-green order-card">
+          <div class="card-block">
+            <h6 class="m-b-20"><a href="javascript:void(0);"
+                style="text-decoration: none;color:white;  font-size: 18px; " onclick="toggleDisciplineList()">Список
+                дисциплин</a></h6>
+            <h2 class="text-right"><i class="fa-solid fa-list f-left"></i></h2>
+            <div class="container" style="display: none; margin-left: -20px; width: 500px;" id="discipline-list">
+              <div class="d-flex justify-content-center align-items-center">
+                <table class="table table-bordered rounded">
+                  <thead>
+                    <tr style="border-radius: 35px">
+                      <th style="border-bottom-width: 0px; font-size: 18px; color: white;">Название дисциплины
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for discipline in disciplines %}
+                    <tr>
+                      <td style="font-size: 17px; color: white;">{{ discipline.name }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container" style="display: none; margin-left: 300px;" id="topic-cards">
+    <div class="container">
+      <div class="row" style="width: 1100px; margin-left: -70px; margin-top: -20px;">
+        <div class="col-md-4 col-xl-6">
+          <div class="card bg-c-blue order-card" style="background-color: #04868f;">
+            <div class="card-block">
+              <h6 class="m-b-20">
+                <a href="javascript:void(0);" style="text-decoration: none;color:white; font-size: 18px;"
+                  onclick="toggleTopicForm()">Добавить тему</a>
+              </h6>
+              <h2 class="text-right"><i class="fas fa-plus f-left"></i></h2>
+              <div id="topic-form" style="display: none;">
+                <form method="post" action="{% url 'add_topic' %}">
+                  {% csrf_token %}
+                  <label style="margin-top: 20px; margin-left: -23px; margin-bottom: 0px; font-size: 16px;"
+                    for="discipline">Дисциплина:</label>
+                  <select id="discipline" name="discipline" required>
+                    {% for discipline in disciplines %}
+                    <option value="{{ discipline.id }}">{{ discipline.name }}</option>
+                    {% endfor %}
+                  </select>
+                  <br><br>
+                  <input style="border-radius: 10px; border: 1px solid #343a40; height:40px; width: 200px;" type="text"
+                    id="name" name="name" required>
+                  <br><br>
+                  <input class="show add-discipline-link"
+                    style="  background-color: #04868f; border: none; font-size: 18px;" type="submit" class="show"
+                    value="Добавить">
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 col-xl-6">
+          <div class="card bg-c-green order-card" style="background-color: #4C4C6D;">
+            <div class="card-block">
+              <h6 class="m-b-20">
+                <a href="javascript:void(0);" style="text-decoration: none;color:white; font-size: 18px;"
+                  onclick="toggleTopicList()">Список тем</a>
+              </h6>
+              <h2 class="text-right"><i class="fas fa-eye f-left"></i></h2>
+              <div class="container" style="display: none; margin-left: -20px; width: 500px;" id="topic-list">
+                <table class="table table-bordered rounded">
+                  <thead>
+                    <tr>
+                      <th style="border-bottom-width: 0px; font-size: 18px; ">Название темы</th>
+                      <th style="border-bottom-width: 0px; font-size: 18px;">Дисциплина</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for topic in topics %}
+                    <tr>
+                      <td style="font-size: 17px;">{{ topic.name }}</td>
+                      <td style="font-size: 17px;">{{ topic.discipline.name }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="2">Нет доступных тем</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container" id="exam-cards" style="display: none; margin-left: 300px;">
+    <div class="row" style="width: 1100px; margin-left: 250px; margin-top: 0px;">
+      <div class="col-md-4 col-xl-6">
+        <div class="card bg-c-blue order-card" style="background-color: #6096ba">
+          <div class="card-block">
+            <h6 class="m-b-20">
+              <a href="javascript:void(0);" onclick="toggleExamForm()"
+                style="text-decoration: none;color:white; font-size: 18px;">
+                Сгенерировать тест
+              </a>
+            </h6>
+            <h2 class="text-right"><i class="fas fa-plus f-left"></i></h2>
+            <form method="post" id="exam-form" style="display: none;" action="{% url 'generate_test' %}">
+              {% csrf_token %}
+              <label style="margin-top: 65px;" for="topic">Выберите топик:</label>
+              <select name="topic" required>
+                {% for topic in topics %}
+                <option value="{{ topic.id }}">{{ topic.name }}</option>
+                {% endfor %}
+              </select>
+              <label for="faculty">Выберите факультет</label>
+              <select name="faculty" required>
+                {% for faculty in faculties %}
+                <option value="{{ faculty.id }}">{{ faculty.name }}</option>
+                {% endfor %}
+              </select><br>
+              <label for="preset_name">Название пресета:</label>
+              <input style="    width: 100%; height: 40px; border-radius: 10px; border: none;" type="text"
+                name="preset_name" required><br>
+              <label for="preset_description">Описание пресета:</label>
+              <input style="    width: 100%; height: 40px; border-radius: 10px;border: none;" type="text"
+                name="preset_description" required><br>
+              <label for="num_questions">Количество вопросов:</label>
+              <input type="number" name="num_questions" required><br>
+              {% for i in num_questions_range %}
+              <div>
+                <label for="incorrect_answers{{ i }}">Выберите неверные ответы для вопроса
+                  {{ i|add:1 }}</label>
+                <select name="incorrect_answers{{ i }}[]" multiple required>
+                  <option value="" disabled selected>Выберите неверные ответы</option>
+                  {% for incorrect_answer in all_incorrect_answers %}
+                  <option value="{{ incorrect_answer.id }}">{{ incorrect_answer.answer_text }}
+                  </option>
+                  {% endfor %}
+                </select><br>
+              </div>
+              {% endfor %}
+              <input class="show add-discipline-link"
+                style="  background-color: #6096ba; border: none; font-size: 18px;" type="submit" class="show"
+                value="Добавить">
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 col-xl-6" style="color: black;">
+        <div class="card bg-c-green order-card" style="background-color: #415a77;">
+          <div class="card-block">
+            <h6 class="m-b-20"><a href="#" id="test-list-link"
+                style="text-decoration: none;color: initial; font-size: 18px;">Список тестов</a></h6>
+            <h2 class="text-right"><i class="fas fa-eye f-left"></i></h2>
+            <div id="test-list-table" style="display: none;">
+              <br>
+              <table class="table table-bordered" id="preset-table">
+                <thead>
+                  <tr>
+                    <th style=" font-size: 18px; border-radius: 10px 0px 0px 0px;">Название</th>
+                    <th style="border-bottom-width: 1px; font-size: 18px;">Вопросов</th>
+                    <th style="border-bottom-width: 1px; font-size: 18px;">Баллов</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for preset in current_presets %}
+                  <tr>
+                    <td style="font-size: 17px;">
+                      <a href="{% url 'students_passed_test' preset.id %}" style="color: white;">{{ preset.name }}</a>
+                    </td>
+                    <td style="font-size: 17px;">{{ preset.total_questions }}</td>
+                    <td style="font-size: 17px;">{{ preset.total_score }}</td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="3">Нет доступных тестов</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="score-table" style="display: none; text-align: center;">
+    <h4 style="color: #ff725e">Ваши баллы за пройденные тесты</h4>
     <table>
-        <thead>
-            <tr>
-                <th>Название теста</th>
-                <th>Баллы</th>
-                <th>Оценка</th>
-                <th>Общий балл</th>
-                <th>Всего вопросов</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for result in user_results %}
-            <tr>
-                <td>{{ result.preset.name }}</td>
-                <td>{{ result.score }}</td>
-                <td>{{ result.grade }}</td>
-                <td>{{ result.total_points }}</td>
-                <td>{{ result.preset.presetquestion_set.count }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+      <thead>
+        <tr style="background-color: #ff725e;">
+          <th>Название теста</th>
+          <th>Баллы</th>
+          <th>Оценка</th>
+          <th>Общий балл</th>
+          <th>Всего вопросов</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for result in user_results %}
+        <tr style="background-color: {% if forloop.counter|divisibleby:2 %}#f0f0f0{% else %}#ffffff{% endif %};">
+          <td>{{ result.preset.name }}</td>
+          <td>{{ result.score }}</td>
+          <td>{{ result.grade }}</td>
+          <td>{{ result.total_points }}</td>
+          <td>{{ result.preset.presetquestion_set.count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
     </table>
-</div>
-	<div id="presets-form" style="display: none;">
-	<div class="container">
-    <h2>Список пресетов</h2>
-    <br>
-    <div class="row">
+  </div>
+  <div id="presets-form" style="display: none; margin-left: 200px;">
+    <div class="container">
+      <h2 style="text-align: center;">Список тестов</h2>
+      <br>
+      <div class="row">
         <div class="col-md-6">
-            <h4>Доступные тесты</h4>
-            <ul class="list-group">
-                {% for preset in current_presets %}
-                <li class="list-group-item">
-                    <a href="{% url 'preset_detail' preset.id %}">
-                        {{ preset.name }}
-                    </a>
-                </li>
-                {% empty %}
-                <li class="list-group-item">Нет доступных тестов</li>
-                {% endfor %}
-            </ul>
+          <ul class="list-group" style="border-radius: 10px;">
+            <h4 style="text-align: center;" class="list-group-item list-group-item-action list-group-item-success">
+              Доступные тесты</h4>
+
+            {% for preset in current_presets %}
+            <li class="list-group-item" style="font-size: 16px">
+              <a style="color: inherit" href="{% url 'preset_detail' preset.id %}">
+                {{ preset.name }}
+              </a>
+            </li>
+            {% empty %}
+            <li class="list-group-item" style="font-size: 16px">Нет доступных тестов</li>
+            {% endfor %}
+          </ul>
         </div>
         <div class="col-md-6">
-            <h4>Пройденные тесты</h4>
-            <ul class="list-group">
-                {% for result in user_results %}
-                <li class="list-group-item">
-                    {{ result.preset.name }}
-                </li>
-				            <span class="completed-preset-message" style="display: none;">Тест уже пройден</span>
+          <ul class="list-group" style="border-radius: 10px; max-height: 300px; overflow-y: auto; margin: 0;">
+            <h4 style="text-align: center; " class="list-group-item list-group-item-action list-group-item-danger">
+              Пройденные тесты
+            </h4>
 
-                {% empty %}
-                <li class="list-group-item">Нет пройденных тестов</li>
-                {% endfor %}
-            </ul>
+            {% for result in user_results %}
+            <li class="list-group-item"
+              style="font-size: 16px; display: flex; justify-content: space-between; align-items: center; ">
+              <span style="color: ">{{ result.preset.name }}</span>
+
+              {% if is_student %}
+              <span class="badge badge-primary badge-pill text-center "
+                style="background-color: #ff725e; font-size: 14px;">{{ result.grade }}</span>
+              {% endif %}
+            </li>
+            {% empty %}
+            <li class="list-group-item" style="font-size: 16px">Нет пройденных тестов</li>
+            {% endfor %}
+          </ul>
         </div>
+      </div>
     </div>
-</div>
-
-    </div>
-</div>
-
-	</div>
-	<script src="{% static 'QuizApp/script.js' %}"></script>
+  </div>
+  <script src="{% static 'QuizApp/script.js' %}"></script>
 </body>
+
 </html>

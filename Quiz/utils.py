@@ -36,14 +36,15 @@ def save_incorrect_answer(topic_id, answer_text):
     return incorrect_answer
 
 
-def save_question(topic_id, question_text, correct_answer, question_points, answer_mode):
+def save_question(topic_id, question_text, correct_answer, question_points, answer_mode, image):
     topic = Topic.objects.get(pk=topic_id)
     question = Question(
         topic=topic,
         question_text=question_text,
         correct_answer=correct_answer,
         points=question_points,
-        answer_mode=answer_mode
+        answer_mode=answer_mode,
+        image=image
     )
     question.save()
 

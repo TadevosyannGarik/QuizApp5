@@ -1,5 +1,6 @@
 import random
-from django.utils import timezone
+from django.conf import settings
+from django.utils import timezone, translation
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Discipline, Topic, Question, IncorrectAnswer, Student, User, QuizResult, Preset, PresetQuestion, \
@@ -11,6 +12,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
+from django.core.files.storage import FileSystemStorage
 
 
 def is_teacher(user):
@@ -87,16 +89,13 @@ def success(request):
 def students_passed_test(request, preset_id):
     preset = Preset.objects.get(id=preset_id)
     student_results = QuizResult.objects.filter(preset=preset)
-    quiz_result_id = 1
-    quiz_result_id = 1
-    context = {
-        'quiz_result_id': quiz_result_id,
-    }
+
     passed_users = [
         {
             "user": result.user,
             "score": result.score,
             "grade": result.grade,
+            "quiz_result_id": result.id,
         }
         for result in student_results
     ]
@@ -278,14 +277,17 @@ def add_question(request):
             question_text = request.POST.get(f'question_text_{i}')
             correct_answer = request.POST.get(f'correct_answer_{i}')
             question_points = int(request.POST.get(f'question_points_{i}'))
-            answer_mode = request.POST.get(f'answer_mode_{i}')  # Получите режим ответа
+            answer_mode = request.POST.get(f'answer_mode_{i}')
+            image = request.FILES.get(f'image_{i}')
 
             if topic_id and question_text and correct_answer and answer_mode:
-                save_question(topic_id, question_text, correct_answer, question_points, answer_mode)
+                save_question(topic_id, question_text, correct_answer, question_points, answer_mode, image)
 
         return redirect('index')
 
     return render(request, 'Quiz/add_question.html', {'topics': topics})
+
+
 
 
 def test_list(request):
@@ -440,7 +442,7 @@ def preset_detail(request, preset_id):
         else:
             answers = []
 
-        question_dict[question.id] = tmp_list + [answers, answer_mode]
+        question_dict[question.id] = tmp_list + [answers, answer_mode, question.image]
 
     if request.method == 'POST':
         quiz_result = QuizResult(user=request.user, preset=preset, total_points=total_points,
@@ -496,8 +498,16 @@ def result(request, quiz_result_id):
     user = quiz_result.user.student
     preset = quiz_result.preset
     questions = Question.objects.filter(topic=preset.topic)
+    percentage_score = (quiz_result.score / quiz_result.total_points) * 100
 
     question_results = PresetQuestionResult.objects.filter(quiz_result=quiz_result)
+
+    for result in question_results:
+        question_text = result.question.question_text
+        if len(question_text.split()) > 15:
+            result.question.question_text_short = ' '.join(question_text.split()[:15]) + ''
+        else:
+            result.question.question_text_short = question_text
 
     context = {
         'quiz_result': quiz_result,
@@ -505,6 +515,7 @@ def result(request, quiz_result_id):
         'preset': preset,
         'questions': questions,
         'question_results': question_results,
+        'percentage_score': percentage_score,
     }
 
     return render(request, 'Quiz/result.html', context)
