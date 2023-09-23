@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Список пресетов</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="container">
+    <h2>Список пресетов</h2>
+    <br>
+    {% for preset in presets %}
+    <a href="{% url 'preset_detail' preset.id %}" class="btn btn-outline-dark mr-3"
+       style="border-radius:10px; height:40px; text-align:center;">{{ preset.name }}</a>
+{% empty %}
+    <p>No presets available.</p>
+{% endfor %}
+</div>
+</body>
+</html>

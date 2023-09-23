@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+            .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin-top: -450px;
+        }
+        table {
+            width: 50%;
+            border-collapse: collapse;
+            font-family: "Gill Sans", sans-serif;
+        }
+
+        th, td {
+
+            padding: 8px;
+            font-size: 16px;
+            text-align: center;
+
+        }
+
+        th {
+            background-color: lightgray;
+        }
+    </style>
+</head>
+<body>
+<br><br><br>
+<h2 style="text-align: center;  font-family: Gill Sans, sans-serif; ">Подождите, скоро администратор разрешит вам войти</h2>
+<div class="container">
+{% block content %}
+  <table>
+    <thead>
+      <tr>
+        <th>Имя</th>
+        <th>Фамилия</th>
+        <th>Почта</th>
+        <th>Факультет</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for teacher in teachers %}
+        <tr>
+          <td>{{ teacher.first_name }}</td>
+          <td>{{ teacher.last_name }}</td>
+          <td>{{ teacher.email }}</td>
+          <td>{{ teacher.faculty }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="4">No teachers are currently waiting for approval.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
+</div>
+</body>
+</html>

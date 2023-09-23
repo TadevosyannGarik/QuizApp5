@@ -3,25 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-<style>
-         .container {
-        margin-top: 100px;
-        margin-left: 750px;
-font-family: Gill Sans Extrabold, sans-serif;
-
-    }
-</style>
+    <style>
+        .container {
+            margin-top: 100px;
+            margin-left: 750px;
+            font-family: Gill Sans Extrabold, sans-serif;
+        }
+    </style>
 </head>
-
 <body>
 <div class="container" >
 <h2 >Список дисциплин</h2>
-
 <ul>
   {% for discipline in disciplines %}
-    <li style="font-size:18px">{{ discipline.name }}</li>
-  {% empty %}
-    <li>Нет доступных дисциплин.</li>
+        <li style="font-size:18px">{{ discipline.name }}</li>
+    {% empty %}
+        <li>Нет доступных дисциплин.</li>
   {% endfor %}
 </ul>
 </div>

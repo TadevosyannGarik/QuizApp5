@@ -1,95 +1,65 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>Topic Detail</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f2f2f2;
-        }
-
-        form {
-            max-width: 500px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        h2 {
-            margin-top: 0;
-        }
-
-        h5 {
-            margin-bottom: 5px;
-        }
-
-        p {
-            margin-top: 0;
-        }
-
-        ul {
-            padding-left: 20px;
-        }
-
-        li {
-            margin-bottom: 5px;
-        }
-
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-    </style>
 </head>
 <body>
-<form method="post" action="{% url 'topic_detail' topic.id %}">
-  {% csrf_token %}
+    <form method="post" action="{% url 'topic_detail' topic.id %}">
+        {% csrf_token %}
+        <div id="questionContainer">
+            {% for question_data in list_question %}
+                <div class="question {% if forloop.first %}active{% endif %}">
+                    <h2>{{ topic.name }}</h2>
+                    <h5>Вопрос:</h5>
+                    <p>{{ question_data.0 }}</p>
 
-  <h2>{{ topic.name }}</h2>
+                    <h6>Варианты ответа:</h6>
+                    <ul>
+                        {% for ans_id, is_correct in question_data.1 %}
+                            <li>
+                                <input type="radio" name="question_{{ question_data.0 }}" value="{{ ans_id }}" required>
+                                {{ ans_id }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endfor %}
+        </div>
 
-  {% for question in questions %}
-    <h5>Вопрос:</h5>
-    <p>{{ question.question_text }}</p>
+        <button type="button" id="nextBtn" class="btn btn-outline-success" style="border-radius:10px; height:40px; text-align:center;">Next</button>
+        <button type="submit" id="submitBtn" class="btn btn-outline-success" style="border-radius:10px; height:40px; text-align:center; display: none;">Отправить</button>
+    </form>
 
-    <h6>Варианты ответа:</h6>
-    <ul>
-      <li>
-        <input type="radio" name="{{ question.id }}" value="{{ question.correct_answer }}">
-        {{ question.correct_answer }}
-      </li>
-      {% for incorrect_answer in question.get_incorrect_answers %}
-        {% if incorrect_answer != question.correct_answer %}
-          <li>
-            <input type="radio" name="{{ question.id }}" value="{{ incorrect_answer }}">
-            {{ incorrect_answer }}
-          </li>
-        {% endif %}
-      {% endfor %}
-    </ul>
-  {% endfor %}
+    <script>
+        const questions = document.querySelectorAll('.question');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        let currentQuestionIndex = 0;
 
-  <button  class="btn btn-outline-success" style="border-radius:10px; height:40px; text-align:center;">Отправить</button>
-</form>
+        function showQuestion(index) {
+            questions.forEach((question, idx) => {
+                if (idx === index) {
+                    question.style.display = 'block';
+                } else {
+                    question.style.display = 'none';
+                }
+            });
 
+            nextBtn.style.display = index < questions.length - 1 ? 'block' : 'none';
+            submitBtn.style.display = index === questions.length - 1 ? 'block' : 'none';
+        }
+
+        showQuestion(currentQuestionIndex);
+
+        nextBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex >= questions.length) {
+                currentQuestionIndex = 0;
+            }
+            showQuestion(currentQuestionIndex);
+        });
+    </script>
 </body>
 </html>
