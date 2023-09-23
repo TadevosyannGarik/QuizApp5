@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Preset Detail</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <style>
+    body {
+      margin: 20px;
+      font-family: Arial, sans-serif;
+      font-size: 20px;
+      background-color: #f8f9fa;
+    }
+
+    #questionContainer {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .question {
+      margin-bottom: 20px;
+      display: none;
+      border: 1px solid #ddd;
+      padding: 20px;
+      font-size: 20px;
+      border-radius: 0px 0px 10px 10px;
+      background-color: #f9f9f9;
+    }
+
+    .question.active {
+      display: block;
+    }
+
+    h2 {
+      margin-bottom: 0px;
+      text-align: center;
+      color: white;
+    }
+
+    h5 {
+      margin-bottom: 10px;
+      font-size: 24px;
+      color: #333;
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .btn-container {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .btn-container button {
+      border-radius: 10px;
+      height: 40px;
+    }
+
+    form {
+      padding: 20px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    input[type="radio"] {
+      margin-right: 5px;
+    }
+
+    label {
+      font-size: 18px;
+      color: #333;
+    }
+
+    .question-number {
+      text-align: right;
+      font-size: 16px;
+      color: #666;
+      margin-top: -15px;
+    }
+
+    .page-title {
+      background-color: #343a40;
+      color: #fff;
+      padding: 15px;
+      border-radius: 10px 10px 0 0;
+      text-align: center;
+    }
+    img{
+    border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <form method="post">
+    {% csrf_token %}
+    <div id="questionContainer">
+      <div class="page-title">
+        <h2>{{ preset.name }}</h2>
+      </div>
+      {% for question_id, question_data in question_dict.items %}
+      <div class="question {% if forloop.first %}active{% endif %}">
+
+        <div class="question-number">{{ forloop.counter }} / {{ question_dict|length }}</div>
+        {% if question_data.3 %}
+        <img src="{{ question_data.3.url }}" alt="Изображение вопроса" style="max-width: 50%;">
+        {% endif %}
+        <h5>Вопрос:</h5>
+        <p>{{ question_data.0 }}</p>
+
+        {% if question_data.2 == 'input' %}
+        <label for="question_{{ question_id }}">Введите ваш ответ:</label>
+        <input type="text" id="question_{{ question_id }}" name="question_{{ question_id }}"
+          placeholder="Введите ваш ответ" class="form-control">
+        {% elif question_data.2 == 'choose' %}
+        <h6>Варианты ответа:</h6>
+        <ul>
+          {% for ans_id, points, _ in question_data.1 %}
+          <li>
+            <input type="radio" id="ans_{{ ans_id }}" name="question_{{ question_id }}" value="{{ ans_id }}">
+            <label for="ans_{{ ans_id }}">{{ ans_id }}</label>
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% if forloop.last %}
+        <div class="btn-container">
+          <button type="submit" class="btn btn-outline-success">Отправить</button>
+        </div>
+        {% else %}
+        <div class="btn-container">
+          <button type="button" class="btn btn-outline-dark next-btn">Следующий вопрос <i
+              class="fas fa-chevron-right"></i></button>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </form>
+
+  <script>
+    const questions = document.querySelectorAll('.question');
+    const nextBtns = document.querySelectorAll('.next-btn');
+    let currentQuestionIndex = 0;
+
+    function showQuestion(index) {
+      questions.forEach((question, idx) => {
+        if (idx === index) {
+          question.style.display = 'block';
+        } else {
+          question.style.display = 'none';
+        }
+      });
+    }
+
+    function onNextClick() {
+      currentQuestionIndex++;
+      if (currentQuestionIndex >= questions.length) {
+        currentQuestionIndex = 0;
+      }
+      showQuestion(currentQuestionIndex);
+    }
+
+    nextBtns.forEach((btn) => {
+      btn.addEventListener('click', onNextClick);
+    });
+
+    showQuestion(currentQuestionIndex);
+  </script>
+</body>
+
+</html>

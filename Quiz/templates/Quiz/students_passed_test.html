@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="stylesheet" href="{% static '/QuizApp/StudentsPassedTest.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js">
+  </script>
+</head>
+</head>
+
+<body>
+  <h1>Результаты студентов по тесту "{{ preset.name }}"</h1>
+  <div id="search-container">
+    <input type="text" id="search-name" name="search-name" placeholder="Поиск по имени и фамилии">
+    <div class="custom-dropdown">
+      <button style="font-size: 16px; color: #A7A1AE;">Фильтровать по</button>
+      <div class="dropdown-content">
+        <button id="filter-name-button" style="color: white; font-size: 16px; text-align:center;">имени</button>
+        <button id="filter-lastname-button" style="color: white; font-size: 16px; text-align:center;">фамилии</button>
+        <button id="filter-scores-button" style="color: white; font-size: 16px; text-align:center;">баллам</button>
+        <button id="filter-grades-button" style="color: white; font-size: 16px; text-align:center;">оценкам</button>
+      </div>
+    </div>
+  </div>
+  {% if passed_users %}
+
+  <div class="table-container" style="height: 600px; overflow: auto; ">
+    <table class="container" id="myTable">
+      <thead>
+        <tr>
+          <th style="text-align: center;">Имя <i style="font-size: 18px;" class="fa fa-sort"></i></th>
+          <th style="text-align: center;">Фамилия <i style="font-size: 18px;" class="fa fa-sort"></i></th>
+          <th style="text-align: center;">Факультет <i style="font-size: 18px;" class="fa fa-sort"></i></th>
+          <th style="text-align: center;">Курс <i style="font-size: 18px;" class="fa fa-sort"></i></th>
+          <th style="text-align: center;">Баллы <i style="font-size: 18px;" class="fa fa-sort"></i></th>
+          <th style="text-align: center;">Оценка <i style="font-size: 18px;" class="fa fa-sort"></i></th>
+        </tr>
+      </thead>
+      <tbody style="border-radius: 10px;">
+        {% for user_data in passed_users %}
+        <tr
+          data-fullname="{{ user_data.user.student.first_name | lower }} {{ user_data.user.student.last_name | lower }}">
+          <td><a href="{% url 'result' quiz_result_id=user_data.quiz_result_id %}"
+              style="color: #FB667A;">{{ user_data.user.student.first_name }}</a></td>
+          <td>{{ user_data.user.student.last_name }}</td>
+          <td>{{ user_data.user.student.faculty }}</td>
+          <td>{{ user_data.user.student.course }}</td>
+          <td>{{ user_data.score }}</td>
+          <td>
+            <div class="c" style="height: 100%; overflow-y: auto; position: relative;">
+              {{ user_data.grade }}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <p style="text-align: center;">Ни один студент не прошел этот тест.</p>
+  {% endif %}
+  <script src="{% static 'QuizApp/PassedTest.js' %}"></script>
+  <script>
+    $(document).ready(function () {
+      $('#myTable').DataTable({
+        "lengthChange": false, // Отключить опцию "Show [количество] entries"
+        "searching": false, // Отключить поиск
+        "info": false, // Отключить информацию о количестве записей
+        "paging": false // Отключить навигацию по страницам
+      });
+    });
+  </script>
+
+</body>
+
+</html>
