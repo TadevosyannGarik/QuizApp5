@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Topic Detail</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <form method="post" action="{% url 'topic_detail' topic.id %}">
+        {% csrf_token %}
+        <div id="questionContainer">
+            {% for question_data in list_question %}
+                <div class="question {% if forloop.first %}active{% endif %}">
+                    <h2>{{ topic.name }}</h2>
+                    <h5>Вопрос:</h5>
+                    <p>{{ question_data.0 }}</p>
+
+                    <h6>Варианты ответа:</h6>
+                    <ul>
+                        {% for ans_id, is_correct in question_data.1 %}
+                            <li>
+                                <input type="radio" name="question_{{ question_data.0 }}" value="{{ ans_id }}" required>
+                                {{ ans_id }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endfor %}
+        </div>
+
+        <button type="button" id="nextBtn" class="btn btn-outline-success" style="border-radius:10px; height:40px; text-align:center;">Next</button>
+        <button type="submit" id="submitBtn" class="btn btn-outline-success" style="border-radius:10px; height:40px; text-align:center; display: none;">Отправить</button>
+    </form>
+
+    <script>
+        const questions = document.querySelectorAll('.question');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        let currentQuestionIndex = 0;
+
+        function showQuestion(index) {
+            questions.forEach((question, idx) => {
+                if (idx === index) {
+                    question.style.display = 'block';
+                } else {
+                    question.style.display = 'none';
+                }
+            });
+
+            nextBtn.style.display = index < questions.length - 1 ? 'block' : 'none';
+            submitBtn.style.display = index === questions.length - 1 ? 'block' : 'none';
+        }
+
+        showQuestion(currentQuestionIndex);
+
+        nextBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex >= questions.length) {
+                currentQuestionIndex = 0;
+            }
+            showQuestion(currentQuestionIndex);
+        });
+    </script>
+</body>
+</html>

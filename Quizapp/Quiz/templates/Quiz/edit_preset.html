@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Редактировать предустановку</title>
+</head>
+<body>
+    <h1>Редактировать пресет "{{ preset.name }}"</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="name">Название пресета:</label>
+        <input type="text" id="name" name="name" value="{{ preset.name }}">
+        <br><br>
+        <div>
+            <ul>
+                {% for preset_question in preset.presetquestion_set.all %}
+                    <li id="question_{{ preset_question.id }}">
+                        <label for="question_select_{{ preset_question.id }}">Вопрос:</label>
+                        <select id="question_select_{{ preset_question.id }}" name="question_select_{{ preset_question.id }}">
+                            {% for question in all_questions %}
+                                <option value="{{ question.id }}" {% if question.id == preset_question.question.id %}selected{% endif %}>{{ question.question_text }}</option>
+                            {% endfor %}
+                        </select>
+                        <br>
+                        <label for="correct_answer_{{ preset_question.id }}">Верный ответ:</label>
+                        <input type="text" id="correct_answer_{{ preset_question.id }}" name="correct_answer_{{ preset_question.id }}" value="{{ preset_question.correct_answer }}">
+                        <br>
+                        <label>Неверные ответы:</label>
+                        <div>
+                            <ul>
+                                {% for incorrect_answer in preset_question.incorrect_answers.all %}
+                                    <li id="answer_{{ incorrect_answer.id }}">
+                                        <span id="answer_text_{{ incorrect_answer.id }}">{{ incorrect_answer.answer_text }}</span>
+                                        <button type="button" name="edit_button_{{ preset_question.id }}" onclick="showIncorrectAnswers('{{ preset_question.id }}', '{{ incorrect_answer.id }}');">Изменить</button>
+                                        <span id="edit_{{ incorrect_answer.id }}" style="display: none;">
+                                            <select id="incorrect_answer_select_{{ incorrect_answer.id }}" name="incorrect_answer_select_{{ preset_question.id }}" onchange="applySelectedAnswer('{{ incorrect_answer.id }}', '{{ preset_question.id }}');">
+                                                <option value="" selected>Выберите неверный ответ</option>
+                                                {% for answer in all_incorrect_answers %}
+                                                    <option value="{{ answer.id }}" {% if answer.id == incorrect_answer.id %}selected{% endif %}>
+                                                        {{ answer.answer_text }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <br>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <button type="submit">Сохранить</button>
+    </form>
+    <br>
+    <a href="{% url 'preset_list' %}">Назад к списку пресетов</a>
+
+    <script>
+        function showIncorrectAnswers(presetQuestionId, incorrectAnswerId) {
+            var editSpan = document.getElementById("edit_" + incorrectAnswerId);
+            editSpan.style.display = "block";
+        }
+
+        function applySelectedAnswer(incorrectAnswerId, presetQuestionId) {
+            var select = document.getElementById("incorrect_answer_select_" + incorrectAnswerId);
+            var selectedOption = select.options[select.selectedIndex];
+            var newAnswerText = selectedOption.text;
+
+            var answerTextSpan = document.getElementById("answer_text_" + incorrectAnswerId);
+            answerTextSpan.textContent = newAnswerText;
+
+            var editSpan = document.getElementById("edit_" + incorrectAnswerId);
+            editSpan.style.display = "none";
+        }
+    </script>
+</body>
+</html>

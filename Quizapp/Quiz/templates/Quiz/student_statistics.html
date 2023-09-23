@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Student Statistics</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            font-size: 16px;
+        }
+
+        header {
+            background-color: #374850;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        nav {
+            padding: 10px;
+        }
+
+        a {
+            text-decoration: none;
+            color: #333;
+        }
+
+        a:hover {
+            color: #777;
+        }
+
+        .container {
+    max-width: 100%;
+
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .container:hover {
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            text-align: center;
+        }
+
+        li {
+            margin-bottom: 10px;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .chart-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin-top: 0px;
+        }
+
+        .chart-item {
+            flex: 1;
+            max-width: 900px; /* Увеличенная ширина для графиков */
+        }
+
+        canvas {
+            margin-top: 20px;
+        }
+
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-label {
+            font-size: 16px;
+        }
+
+        .sort-options {
+            margin-top: 20px;
+        }
+
+        .sort-options a {
+            margin-right: 10px;
+        }
+
+        /* Добавление анимации */
+        h1:hover {
+            color: #ff5733;
+            transition: color 0.3s ease;
+        }
+
+        nav a {
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #ff5733;
+        }
+
+        /* Стилизация кнопок */
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+        }
+
+        /* Стилизация форм */
+        input[type="text"],
+        input[type="email"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        input[type="submit"] {
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+        }
+
+        /* Стилизация заголовков в статьях */
+        .article-title {
+            font-size: 28px;
+            margin-top: 20px;
+        }
+
+        .article-title:hover {
+            transition: color 0.3s ease;
+        }
+
+        /* Стилизация изображений */
+        img {
+            border-radius: 10px;
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        img:hover {
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Выделение цитат */
+        blockquote {
+            margin: 20px 0;
+            padding: 10px 20px;
+            font-style: italic;
+        }
+
+        blockquote:hover {
+        }
+
+        /* Стилизация таблиц */
+        table {
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ccc;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            color: #fff;
+        }
+
+        table:hover {
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        /* Стилизация подвала */
+        footer {
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        /* Анимация для кнопки "Наверх" */
+        #scroll-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+        }
+
+        #scroll-to-top:hover {
+        }
+
+        /* Пользовательский курсор для ссылок */
+        a:hover {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+<h1>{{ student.first_name }} {{ student.last_name }}</h1>
+    </header>
+    <div class="container">
+        <h1 style="text-align: center; color: #ff725e;">Общая статистика</h1>
+        <ul>
+            <li>Всего верных ответов: <span class="badge badge-primary badge-pill text-center "
+                                style="background-color: #ff725e; font-size: 14px;">{{ total_correct_answers }}</span></li>
+            <li>Всего неверных ответов: <span class="badge badge-primary badge-pill text-center "
+                                style="background-color: #ff725e; font-size: 14px;">{{ total_incorrect_answers }}</span></li>
+            <li>Среднее верных ответов: <span class="badge badge-primary badge-pill text-center "
+                                style="background-color: #ff725e; font-size: 14px;">{{ average_correct_answers }}</span></li>
+            <li>Среднее неверных ответов: <span class="badge badge-primary badge-pill text-center "
+                                style="background-color: #ff725e; font-size: 14px;">{{ average_incorrect_answers }}</span></li>
+            <li>Средняя оценка: <span class="badge badge-primary badge-pill text-center "
+                                style="background-color: #ff725e; font-size: 14px;">{{ average_grades }}</span></li>
+            <li>Средний балл: <span class="badge badge-primary badge-pill text-center "
+                                style="background-color: #ff725e; font-size: 14px;">{{ average_score }}</span></li>
+            <li>Пройдено тестов: <span class="badge badge-primary badge-pill text-center "
+                                style="background-color: #ff725e; font-size: 14px;">{{ total_tests_taken }}</span></li>
+        </ul>
+
+        <div class="chart-container">
+            <div class="chart-item">
+                <canvas id="myChart" width="800" height="400"></canvas>
+            </div>
+            <div class="chart-item">
+                <canvas id="myChart1" width="800" height="400"></canvas>
+            </div>
+        </div>
+        <div class="chart-legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgba(75, 192, 192, 1);"></div>
+                <div class="legend-label">Всего правильных ответов</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgba(255, 99, 132, 1);"></div>
+                <div class="legend-label">Всего неверных ответов</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgba(255, 206, 86, 1);"></div>
+                <div class="legend-label">Средняя оценка</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgba(153, 102, 255, 1);"></div>
+                <div class="legend-label">Средний балл</div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgba(255, 99, 132, 1);"></div>
+                <div class="legend-label">Всего пройдено тестов</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var ctx = document.getElementById('myChart').getContext('2d');
+
+        var data = {
+            labels: ['Среднее верных ответов', 'Среднее неверных ответов', 'Средняя оценка', 'Средний балл', 'Пройдено тестов'],
+            datasets: [
+                {
+                    label: 'Среднее верных ответов',
+                    data: [{{ average_correct_answers }}, 0, 0, 0, 0],
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y-axis-1'
+                },
+                {
+                    label: 'Среднее неверных ответов',
+                    data: [0, {{ average_incorrect_answers }}, 0, 0, 0],
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y-axis-1'
+                },
+                {
+                    label: 'Средняя оценка',
+                    data: [0, 0, {{ average_grades }}, 0, 0],
+                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                    borderColor: 'rgba(255, 206, 86, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y-axis-1'
+                },
+                {
+                    label: 'Средняя балл',
+                    data: [0, 0, 0, {{ average_score }}, 0],
+                    backgroundColor: 'rgba(153, 102, 255, 1)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y-axis-2'
+                },
+                {
+                    label: 'Пройдено тестов',
+                    data: [0, 0, 0, 0, {{ total_tests_taken }}],
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y-axis-2'
+                }
+            ]
+        };
+
+        var options = {
+            scales: {
+                y: [
+                    {
+                        id: 'y-axis-1',
+                        type: 'linear',
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Всего верных ответов / Incorrect Answers / Grades'
+                        }
+                    },
+                    {
+                        id: 'y-axis-2',
+                        type: 'linear',
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Average Score / Total Tests Taken'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    }
+                ]
+            }
+        };
+
+        var myChart = new Chart(ctx, {
+            type: 'line',
+            data: data,
+            options: options
+        });
+    </script>
+<script>
+ var ctx = document.getElementById('myChart1').getContext('2d');
+
+        var data = {
+            labels: ['Среднее верных ответов', 'Average Incorrect Answers', 'Average Grades', 'Average Score'],
+            datasets: [
+                {
+                    label: 'Average Correct Answers',
+                    data: [{{ average_correct_answers }}, 0, 0, 0],
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y-axis-1'
+                },
+                {
+                    label: 'Average Incorrect Answers',
+                    data: [0, {{ average_incorrect_answers }}, 0, 0],
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y-axis-1'
+                },
+                {
+                    label: 'Average Grades',
+                    data: [0, 0, {{ average_grades }}, 0],
+                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                    borderColor: 'rgba(255, 206, 86, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y-axis-1'
+                },
+                {
+                    label: 'Average Score',
+                    data: [0, 0, 0, {{ average_score }}],
+                    backgroundColor: 'rgba(153, 102, 255, 1)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y-axis-2'
+                }
+            ]
+        };
+
+        var options = {
+            scales: {
+                y: [
+                    {
+                        id: 'y-axis-1',
+                        type: 'linear',
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Average Correct Answers / Incorrect Answers / Grades'
+                        }
+                    },
+                    {
+                        id: 'y-axis-2',
+                        type: 'linear',
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Average Score'
+                        },
+                        grid: {
+                            drawOnChartArea: false
+                        }
+                    }
+                ]
+            }
+        };
+
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: options
+        });
+    </script>
+</body>
+
+</html>

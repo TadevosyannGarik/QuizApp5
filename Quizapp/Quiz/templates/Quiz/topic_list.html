@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<style>
+           .container {
+        margin-top: 50px;
+        margin-left: 400px;
+        text-align: center;
+    }
+</style>
+<body>
+<div class="container">
+<h2>Список тестов</h2>
+
+<br>
+  {% for topic in topics %}
+     <a href="{% url 'topic_detail' topic.id%}" class="btn btn-outline-dark mr-3"   style="border-radius:10px; height:40px; text-align:center;">{{ topic.name }}</a>
+  {% empty %}
+
+  {% endfor %}
+
+</div>
+</body>
+</html>

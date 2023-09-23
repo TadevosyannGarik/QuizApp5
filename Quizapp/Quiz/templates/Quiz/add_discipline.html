@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+     .container {
+        margin-top: 100px;
+        margin-left: 35px;
+        text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+    <h2>Добавить дисциплину</h2>
+    {% if messages %}
+        <div class="alert alert-danger">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+    <form method="post" action="{% url 'add_discipline' %}">
+        {% csrf_token %}
+        <br>
+        <input style="border-radius: 10px; border: 1px solid #343a40; height:40px; width: 200px;" type="text" id="name" name="name" required>
+        <br><br>
+        <input class="btn btn-outline-success" style="border-radius:10px; height:40px; " type="submit" value="Добавить">
+    </form>
+</div>
+</body>
+</html>
