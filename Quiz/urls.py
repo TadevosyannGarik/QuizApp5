@@ -24,7 +24,6 @@ urlpatterns = [
     path('faculty/preset/list', views.faculty_preset_list, name='faculty_preset_list'),
     path('students_passed_test/<int:preset_id>/', views.students_passed_test, name='students_passed_test'),
     path('result/<int:quiz_result_id>/', views.result, name='result'),
-    path('student/<int:student_id>/statistics/', views.student_statistics, name='student_statistics'),
 ]
 
 if settings.DEBUG:

@@ -3,8 +3,6 @@ from django.conf import settings
 from django.utils import timezone, translation
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, get_object_or_404, redirect
-
-from . import models
 from .models import Discipline, Topic, Question, IncorrectAnswer, Student, User, QuizResult, Preset, PresetQuestion, \
     Faculty, PresetQuestionResult
 from .utils import save_discipline, save_topic, save_question
@@ -14,81 +12,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Avg, Count, F, Sum
-
-
-def student_statistics(request, student_id):
-    student = get_object_or_404(Student, id=student_id)
-
-    quiz_results = QuizResult.objects.filter(user__student=student, date_completed__isnull=False)
-
-    total_correct_answers = 0
-    total_incorrect_answers = 0
-    total_scores = 0
-    total_grades = 0
-
-    correct_answers_by_quiz = {}
-    incorrect_answers_by_quiz = {}
-
-    for result in quiz_results:
-        preset_question_results = PresetQuestionResult.objects.filter(quiz_result=result)
-
-        correct_answers = []
-        incorrect_answers = []
-
-        for pq_result in preset_question_results:
-            if pq_result.student_answer == pq_result.question.correct_answer:
-                correct_answers.append(pq_result.question.question_text)
-            else:
-                incorrect_answers.append(pq_result.question.question_text)
-
-        correct_answers_by_quiz[result] = correct_answers
-        incorrect_answers_by_quiz[result] = incorrect_answers
-
-        total_scores += result.score
-        total_correct_answers += len(correct_answers)
-        total_incorrect_answers += len(incorrect_answers)
-        total_grades += result.grade
-
-    # Заменяем запятые на точки в значениях для графика
-    average_correct_answers = round(total_correct_answers / len(quiz_results), 1) if len(quiz_results) > 0 else 0
-    average_incorrect_answers = round(total_incorrect_answers / len(quiz_results), 1) if len(quiz_results) > 0 else 0
-    average_grades = round(total_grades / len(quiz_results), 1) if len(quiz_results) > 0 else 0
-
-    average_correct_answers = str(average_correct_answers).replace(',', '.')
-    average_incorrect_answers = str(average_incorrect_answers).replace(',', '.')
-    average_grades = str(average_grades).replace(',', '.')
-
-    # Общий балл за пройденные тесты
-    total_points = sum(result.score for result in quiz_results)
-
-    # Средний балл
-    average_score = round(total_points / len(quiz_results), 1) if len(quiz_results) > 0 else 0
-    average_score = str(average_score).replace(',', '.')
-
-    # Вычисляем общее количество тестов
-    total_tests_taken = len(quiz_results)
-
-    # Вычисляем среднее значение пройденных тестов
-    average_tests_taken = round(total_tests_taken / len(quiz_results), 1) if len(quiz_results) > 0 else 0
-    average_tests_taken = str(average_tests_taken).replace(',', '.')
-
-    context = {
-        'student': student,
-        'correct_answers_by_quiz': correct_answers_by_quiz,
-        'incorrect_answers_by_quiz': incorrect_answers_by_quiz,
-        'total_correct_answers': total_correct_answers,
-        'total_incorrect_answers': total_incorrect_answers,
-        'average_correct_answers': average_correct_answers,
-        'average_incorrect_answers': average_incorrect_answers,
-        'average_grades': average_grades,
-        'total_points': total_points,
-        'average_score': average_score,
-        'total_tests_taken': total_tests_taken,  # Передаем общее количество тестов
-        'average_tests_taken': average_tests_taken,  # Передаем среднее значение пройденных тестов
-    }
-
-    return render(request, 'Quiz/student_statistics.html', context)
+from django.core.files.storage import FileSystemStorage
 
 
 def is_teacher(user):
@@ -235,8 +159,7 @@ def after_login(request):
                    'student_name': student_name,
                    'disciplines': user_allowed_disciplines, 'topics': user_allowed_topics,
                    'user_results': user_results, 'faculties': faculties,
-                   'current_presets': current_presets, 'completed_presets': completed_presets,     'student_id': student.id  # Убедитесь, что передаете student.id
-})
+                   'current_presets': current_presets, 'completed_presets': completed_presets})
 
 
 def index(request):
